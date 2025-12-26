@@ -12,7 +12,7 @@
 	<artifactId>PropertyRentalApi</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>PropertyRentalApi</name>
-	<description>Demo project for Spring Boot</description>
+	<description>HomeLink is a rental housing platform built to help students and renters find affordable and trustworthy rooms in Phnom Penh. It provides organized listings, persistent posts, and user reviews to improve transparency and reduce common rental issues like hidden costs and unreliable information.</description>
 	<url/>
 	<licenses>
 		<license/>
