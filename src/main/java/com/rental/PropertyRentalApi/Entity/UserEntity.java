@@ -10,6 +10,9 @@ public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    
+    @Column(name = "fullname", nullable = false)
+    private String fullname;
 
     @Column(name = "username", unique = true, nullable = false)
     private String username;
