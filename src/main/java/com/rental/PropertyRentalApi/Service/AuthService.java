@@ -16,6 +16,5 @@ public interface AuthService {
     AuthResponse login(AuthRequest request,
                        HttpServletResponse response);
 
-    ApiResponse<Object> logout(HttpServletRequest request,
-                               HttpServletResponse response);
+    ApiResponse<Object> logout(HttpServletRequest request, HttpServletResponse response);
 }
