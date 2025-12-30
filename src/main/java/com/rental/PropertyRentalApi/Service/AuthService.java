@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 
+
 public interface AuthService {
     RegisterResponse register(RegisterRequest request,
                               HttpServletResponse response);
