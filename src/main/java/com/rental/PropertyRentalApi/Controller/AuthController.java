@@ -1,5 +1,4 @@
 package com.rental.PropertyRentalApi.Controller;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -11,6 +10,8 @@ import com.rental.PropertyRentalApi.DTO.response.RegisterResponse;
 import com.rental.PropertyRentalApi.Service.AuthService;
 
 import lombok.RequiredArgsConstructor;
+import com.rental.PropertyRentalApi.DTO.request.AuthRequest;
+import com.rental.PropertyRentalApi.DTO.response.AuthResponse;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -26,7 +27,13 @@ public class AuthController {
 
         // Call the service to register the user
         RegisterResponse response = authService.register(request);
+        return ResponseEntity.ok(response);
+    }
 
+    // Login endpoint
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
+        AuthResponse response = authService.login(request);
         return ResponseEntity.ok(response);
     }
 }

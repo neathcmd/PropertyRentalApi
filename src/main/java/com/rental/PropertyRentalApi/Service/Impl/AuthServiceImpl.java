@@ -8,6 +8,9 @@ import com.rental.PropertyRentalApi.DTO.response.UserResponse;
 import com.rental.PropertyRentalApi.Entity.UserEntity;
 import com.rental.PropertyRentalApi.Repository.UserRepository;
 import com.rental.PropertyRentalApi.Service.AuthService;
+import com.rental.PropertyRentalApi.Service.JwtService;
+import static com.rental.PropertyRentalApi.Exception.ErrorsExceptionFactory.notFound;
+import static com.rental.PropertyRentalApi.Exception.ErrorsExceptionFactory.unauthorized;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,9 +22,10 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
-  @Override
-public RegisterResponse register(RegisterRequest request) {
+    @Override
+    public RegisterResponse register(RegisterRequest request) {
 
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
             return new RegisterResponse("Username already exists",null);
@@ -41,22 +45,40 @@ public RegisterResponse register(RegisterRequest request) {
         UserEntity savedUser = userRepository.save(user);
 
         UserResponse userResponse = new UserResponse(
-            savedUser.getId(),
-            savedUser.getFullname(),
-            savedUser.getUsername(),
-            savedUser.getEmail()
+                savedUser.getId(),
+                savedUser.getFullname(),
+                savedUser.getUsername(),
+                savedUser.getEmail()
         );
 
         return new RegisterResponse("Register successfully ", userResponse);
     }
 
-  @Override
-  public AuthResponse login(AuthRequest request) {
-    throw new UnsupportedOperationException("Unimplemented method 'login'");
-  }
+    @Override
+    public AuthResponse login(AuthRequest request) {
+        UserEntity user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> notFound("User not found."));
 
-  
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw unauthorized("Invalid password");
+        }
+
+        UserResponse userResponse = new UserResponse(
+                user.getId(),
+                user.getFullname(),
+                user.getUsername(),
+                user.getEmail()
+        );
+
+        String token = jwtService.generateToken(
+                String.valueOf(user.getId()),
+                user.getEmail(),
+                user.getUsername()
+                // user.getRole()
+        );
+
+        return new AuthResponse("Login successfully", userResponse, token);
+    }
 
 
-   
 }
