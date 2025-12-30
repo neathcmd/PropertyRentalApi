@@ -159,7 +159,6 @@ public class AuthServiceImpl implements AuthService {
         );
     }
 
-
     @Override
     public ApiResponse<Object> logout(HttpServletRequest request, HttpServletResponse response) {
 
