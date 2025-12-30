@@ -13,7 +13,7 @@ import org.springframework.web.cors.CorsConfiguration;
 
 @Configuration
 @EnableWebSecurity
-@SuppressWarnings("unused")
+// @SuppressWarnings("unused")
 public class SecurityConfig {
 
     @Bean

@@ -26,4 +26,7 @@ public class UserEntity {
     @Column(name = "phone",unique = true)
     private String phone;
 
+    // @Column(nullable = false)
+    // private String role; 
+
 }
