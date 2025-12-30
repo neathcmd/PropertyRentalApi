@@ -26,15 +26,15 @@ public class JwtService {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateToken(String userId, String email, String username, String role) {
+    public String generateToken(String userId, String email, String username) {
 
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
         claims.put("email", email);
 
-        if (role != null && !role.isBlank()) {
-            claims.put("role", role);
-        }
+        // if (role != null && !role.isBlank()) {
+        //     claims.put("role", role);
+        // }
 
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expirationTime);
