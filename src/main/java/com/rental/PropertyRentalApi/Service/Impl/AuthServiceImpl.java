@@ -62,7 +62,8 @@ public class AuthServiceImpl implements AuthService {
         String accessToken = jwtService.generateAccessToken(
                 String.valueOf(savedUser.getId()),
                 savedUser.getEmail(),
-                savedUser.getUsername()
+                savedUser.getUsername(),
+                savedUser.getRoles().toString()
         );
 
         String refreshToken = jwtService.generateRefreshToken(
@@ -105,6 +106,7 @@ public class AuthServiceImpl implements AuthService {
             AuthRequest request,
             HttpServletResponse response
     ) {
+
         UserEntity user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> notFound("User not found."));
 
@@ -125,7 +127,8 @@ public class AuthServiceImpl implements AuthService {
         String accessToken = jwtService.generateAccessToken(
                 String.valueOf(user.getId()),
                 user.getEmail(),
-                user.getUsername()
+                user.getUsername(),
+                user.getRoles().toString()
         );
 
         String refreshToken = jwtService.generateRefreshToken(

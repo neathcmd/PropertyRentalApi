@@ -65,8 +65,8 @@ public class JwtService {
     public String generateAccessToken(
             String userId,
             String email,
-            String username
-            // String role   // ⬅️ PROD: enable role-based authorization
+            String username,
+            String roles   // ⬅️ PROD: enable role-based authorization
     ) {
 
         Map<String, Object> claims = new HashMap<>();
@@ -80,9 +80,9 @@ public class JwtService {
          * =========================
          * Uncomment when you add RBAC (role-based access control)
          */
-        // if (role != null && !role.isBlank()) {
-        //     claims.put("role", role);
-        // }
+         if (roles != null && !roles.isBlank()) {
+             claims.put("roles", roles);
+         }
 
         return buildToken(claims, username, accessTokenExpired);
     }
