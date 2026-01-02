@@ -78,7 +78,7 @@ public class SecurityConfig {
                         // ============================
                         // PROD (UNCOMMENT)
                         // ============================
-                        // .anyRequest().authenticated()
+//                         .anyRequest().authenticated()
                 )
 
                 // Stateless session (JWT-ready)
