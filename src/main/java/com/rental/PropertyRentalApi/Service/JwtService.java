@@ -4,6 +4,7 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import io.jsonwebtoken.Jwts;
@@ -66,7 +67,7 @@ public class JwtService {
             String userId,
             String email,
             String username,
-            String roles   // ⬅️ PROD: enable role-based authorization
+            List<String> roles   // ⬅️ PROD: enable role-based authorization
     ) {
 
         Map<String, Object> claims = new HashMap<>();
@@ -80,7 +81,7 @@ public class JwtService {
          * =========================
          * Uncomment when you add RBAC (role-based access control)
          */
-         if (roles != null && !roles.isBlank()) {
+         if (roles != null && !roles.isEmpty()) {
              claims.put("roles", roles);
          }
 

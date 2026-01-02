@@ -2,10 +2,13 @@ package com.rental.PropertyRentalApi.Controller;
 
 import com.rental.PropertyRentalApi.DTO.request.AuthRequest;
 import com.rental.PropertyRentalApi.DTO.request.RegisterRequest;
+import com.rental.PropertyRentalApi.DTO.response.ApiResponse;
 import com.rental.PropertyRentalApi.DTO.response.AuthResponse;
 import com.rental.PropertyRentalApi.DTO.response.RegisterResponse;
 import com.rental.PropertyRentalApi.Service.AuthService;
 
+import com.rental.PropertyRentalApi.Utils.CookieHelper;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import lombok.RequiredArgsConstructor;
@@ -18,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final CookieHelper cookieHelper;
 
     @PostMapping("/register")
     public ResponseEntity<RegisterResponse> register(
@@ -35,5 +39,11 @@ public class AuthController {
     ) {
         AuthResponse result = authService.login(request, response);
         return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/logout")
+    public ApiResponse<Object> logout(HttpServletRequest request, HttpServletResponse response) {
+        // call your service
+        return authService.logout(request, response);
     }
 }
