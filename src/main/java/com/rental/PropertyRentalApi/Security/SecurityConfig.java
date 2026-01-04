@@ -2,6 +2,7 @@ package com.rental.PropertyRentalApi.Security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+//import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -11,11 +12,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 
+//@EnableMethodSecurity
 @Configuration
 @EnableWebSecurity
-// @SuppressWarnings("unused")
 public class SecurityConfig {
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
@@ -98,35 +98,4 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    // ========================
-    // COMMAND OUT FOR NOW
-    // ========================
-    // EXPLAIN: UserDetailsService
-    // ========================
-    // This is a Spring Security interface that tells Spring how to load a user given a login identifier (usually username or email).
-    // In your example, it fetches a UserEntity by email and throws an error if not found.
-    // Once you use Spring Security’s authentication flow (like AuthenticationManager), this bean will be used automatically when someone logs in.
-    // ========================
-    // @Bean
-    // public UserDetailsService userDetailsService(UserRepository userRepository) {
-    //  return username ->
-    //          userRepository.findByEmail(username)
-    //                  .orElseThrow(() -> notFound("Username not found."));
-    // }
-
-    // EXPLAIN: AuthenticationManager
-    // ========================
-    // This is Spring Security’s engine for authenticating users.
-    // It checks:
-    // Is the user in the database?
-    // Does the password match?
-    // Is the account enabled/locked/expired?
-    // Normally, instead of manually checking passwords like our current login code does, you can call authenticationManager.authenticate(...) and it does all the checks for you.
-    // ========================
-    // @Bean
-    // public AuthenticationManager authenticationManager(
-    //        AuthenticationConfiguration config
-    // ) throws Exception {
-    //    return config.getAuthenticationManager();
-    // }
 }
