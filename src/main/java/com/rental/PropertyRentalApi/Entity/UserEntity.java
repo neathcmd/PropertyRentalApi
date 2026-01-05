@@ -2,8 +2,6 @@ package com.rental.PropertyRentalApi.Entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
-
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -11,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Data
 @Entity
@@ -33,10 +32,10 @@ public class UserEntity implements UserDetails {
     @Column(name = "email", unique = true, nullable = false)
     private String email;
 
-    @Column(name = "password", nullable = false )
+    @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "phone",unique = true)
+    @Column(name = "phone", unique = true)
     private String phone;
 
     @ManyToMany(fetch = FetchType.EAGER)
@@ -47,36 +46,35 @@ public class UserEntity implements UserDetails {
     )
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
+    @Builder.Default
     private Set<RoleEntity> roles = new HashSet<>();
-
 
     @Column(name = "enabled")
     private boolean enabled;
 
-
     // =========================
-    // UserDetails IMPLEMENTATION
+    // UserDetails Implementation
     // =========================
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return roles.stream()
                 .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
-                .toList();
+                .collect(Collectors.toSet());
     }
 
     @Override
     public boolean isAccountNonExpired() {
-        return true;
+        return true; // account never expires
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return true; // account never locked
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return true;
+        return true; // credentials never expire
     }
 
     @Override

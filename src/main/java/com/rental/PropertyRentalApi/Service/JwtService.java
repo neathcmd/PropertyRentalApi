@@ -7,10 +7,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 
@@ -81,9 +83,9 @@ public class JwtService {
          * =========================
          * Uncomment when you add RBAC (role-based access control)
          */
-         if (roles != null && !roles.isEmpty()) {
-             claims.put("roles", roles);
-         }
+        if (roles != null && !roles.isEmpty()) {
+            claims.put("roles", roles);
+        }
 
         return buildToken(claims, username, accessTokenExpired);
     }
@@ -133,4 +135,37 @@ public class JwtService {
                 .signWith(getSignKey(), Jwts.SIG.HS512)
                 .compact();
     }
+
+    // =================
+    // USERNAME EXTRACTOR METHOD
+    // =================
+    public String extractUsername(String token) {
+        return Jwts.parser()
+                .verifyWith(getSignKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .getSubject();
+    }
+
+
+    // =================
+    // VALIDATE TOKEN
+    // =================
+    public boolean isTokenValid(String token, UserDetails userDetails) {
+        final String username = extractUsername(token);
+        return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+    }
+
+    private boolean isTokenExpired(String token) {
+        Date expiration = Jwts.parser()
+                .verifyWith(getSignKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .getExpiration();
+        return expiration.before(new Date());
+    }
+
 }
+
