@@ -75,9 +75,16 @@ public class SecurityConfig {
                 // ============================
                 // AUTHORIZATION RULES
                 // ============================
-                .authorizeHttpRequests(auth -> auth
-                                // Public endpoints (login, register)
-                                .requestMatchers("/api/auth/**").permitAll()
+//                .authorizeHttpRequests(auth -> auth
+//                                // Public endpoints (login, register)
+//                                .requestMatchers("/api/auth/**").permitAll()
+////                                .requestMatchers("/api/posts/**").permitAll()
+
+                                .authorizeHttpRequests(auth -> auth
+                                        .requestMatchers("/api/auth/**").permitAll()
+                                        .requestMatchers("/api/posts/**").permitAll()
+                                        .anyRequest().authenticated()
+                                )
 
                                 // DEV: allow all endpoints
 //                                .anyRequest().permitAll()
@@ -85,8 +92,8 @@ public class SecurityConfig {
                         // ============================
                         // PROD (UNCOMMENT)
                         // ============================
-                         .anyRequest().authenticated()
-                )
+//                         .anyRequest().authenticated()
+//                )
 
                 // Stateless session (JWT-ready)
                 .sessionManagement(session -> session
