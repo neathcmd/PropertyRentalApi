@@ -7,13 +7,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import io.jsonwebtoken.Claims;
+import com.rental.PropertyRentalApi.Entity.UserEntity;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+
+import static com.rental.PropertyRentalApi.Exception.ErrorsExceptionFactory.unauthorized;
 
 
 @Service
@@ -165,6 +169,20 @@ public class JwtService {
                 .getPayload()
                 .getExpiration();
         return expiration.before(new Date());
+    }
+
+    // =================
+    // GET CURRENT USER
+    // =================
+    public UserEntity getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw unauthorized("User not Authenticated");
+        }
+
+        // Store entity as principal in jwt auth filter
+        return (UserEntity) authentication.getPrincipal();
     }
 
 }
