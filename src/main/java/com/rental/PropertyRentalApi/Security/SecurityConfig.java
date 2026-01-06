@@ -80,18 +80,18 @@ public class SecurityConfig {
 //                                .requestMatchers("/api/auth/**").permitAll()
 ////                                .requestMatchers("/api/posts/**").permitAll()
 
-                                .authorizeHttpRequests(auth -> auth
-                                        .requestMatchers("/api/auth/**").permitAll()
-                                        .requestMatchers("/api/posts/**").permitAll()
-                                        .anyRequest().authenticated()
-                                )
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/posts/**").permitAll()
+                        .anyRequest().authenticated()
+                )
 
-                                // DEV: allow all endpoints
+                // DEV: allow all endpoints
 //                                .anyRequest().permitAll()
 
-                        // ============================
-                        // PROD (UNCOMMENT)
-                        // ============================
+                // ============================
+                // PROD (UNCOMMENT)
+                // ============================
 //                         .anyRequest().authenticated()
 //                )
 
@@ -101,7 +101,7 @@ public class SecurityConfig {
                 );
 
         // PROD: add JWT filter here
-         http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
