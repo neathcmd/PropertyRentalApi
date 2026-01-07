@@ -1,5 +1,6 @@
 package com.rental.PropertyRentalApi.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -41,7 +42,9 @@ public class PropertyEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", nullable = false)
+    @JsonIgnore
     private UserEntity createdBy;
+
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

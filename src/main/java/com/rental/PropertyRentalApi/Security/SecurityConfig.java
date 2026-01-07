@@ -75,14 +75,10 @@ public class SecurityConfig {
                 // ============================
                 // AUTHORIZATION RULES
                 // ============================
-//                .authorizeHttpRequests(auth -> auth
-//                                // Public endpoints (login, register)
-//                                .requestMatchers("/api/auth/**").permitAll()
-////                                .requestMatchers("/api/posts/**").permitAll()
-
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/posts/**").permitAll()
+                        .requestMatchers("/api/users/**").hasRole("admin")
+                        .requestMatchers("/api/properties/**").hasAnyRole("admin", "agent")
                         .anyRequest().authenticated()
                 )
 

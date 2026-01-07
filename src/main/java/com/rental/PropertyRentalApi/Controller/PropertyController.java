@@ -18,10 +18,13 @@ public class PropertyController {
     private final JwtService jwtService;
 
     // Create Property
-    @PostMapping("/")
-    public ResponseEntity<PropertyEntity> createProperty(@RequestBody PropertyEntity propertyRequest) {
+    @PostMapping
+    public ResponseEntity<PropertyEntity> createProperty(
+            @RequestBody PropertyEntity propertyRequest
+    ) {
         PropertyEntity createdProperty = propertyService.create(propertyRequest);
-        return new ResponseEntity<>(createdProperty, HttpStatus.CREATED);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdProperty);
     }
+
 }
 
