@@ -6,6 +6,7 @@ import com.rental.PropertyRentalApi.Repository.PropertyRepository;
 //import com.rental.PropertyRentalApi.Repository.UserRepository;
 import com.rental.PropertyRentalApi.Service.JwtService;
 import com.rental.PropertyRentalApi.Service.PropertyService;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -21,12 +22,17 @@ public class PropertyServiceImpl implements PropertyService {
 //    private final UserRepository userRepository;
 
     @Override
+    @Transactional
     public PropertyEntity create(PropertyEntity createProperty) {
-        // First: Get the current user
+        // 1. Get authenticated user
         UserEntity currentUser = jwtService.getCurrentUser();
 
+        // 2. Protect fields that client must NOT control
+        createProperty.setId(null);          // prevent overwrite
         createProperty.setCreatedBy(currentUser);
+        createProperty.setIsDeleted(false);  // ensure default state
 
+        // 3. Save
         return propertyRepository.save(createProperty);
     }
 
