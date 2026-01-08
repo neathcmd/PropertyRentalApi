@@ -76,13 +76,12 @@ public class SecurityConfig {
                 // AUTHORIZATION RULES
                 // ============================
                 .authorizeHttpRequests(auth -> auth
-                                // Public endpoints (login, register)
-                                .requestMatchers("/api/auth/**").permitAll()
-                                .requestMatchers("/api/users/**").hasRole("admin")
-                                .requestMatchers("/api/properties/**").hasAnyRole("admin", "agent")
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/users/**").hasRole("admin")
+                        .requestMatchers("/api/properties/**").hasAnyRole("admin", "agent")
 
                 // DEV: allow all endpoints
-                               // .anyRequest().permitAll()
+//                                .anyRequest().permitAll()
 
                 // ============================
                 // PROD (UNCOMMENT)
@@ -106,4 +105,5 @@ public class SecurityConfig {
         // BCrypt is safe for both DEV and PROD
         return new BCryptPasswordEncoder();
     }
+
 }
