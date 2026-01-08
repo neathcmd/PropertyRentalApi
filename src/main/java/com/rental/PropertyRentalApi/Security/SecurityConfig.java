@@ -79,8 +79,6 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/users/**").hasRole("admin")
                         .requestMatchers("/api/properties/**").hasAnyRole("admin", "agent")
-                        .anyRequest().authenticated()
-                )
 
                 // DEV: allow all endpoints
 //                                .anyRequest().permitAll()
@@ -88,8 +86,8 @@ public class SecurityConfig {
                 // ============================
                 // PROD (UNCOMMENT)
                 // ============================
-//                         .anyRequest().authenticated()
-//                )
+                         .anyRequest().authenticated()
+                )
 
                 // Stateless session (JWT-ready)
                 .sessionManagement(session -> session
