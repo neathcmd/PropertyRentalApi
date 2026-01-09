@@ -7,13 +7,13 @@ import java.util.List;
 
 public interface PropertyService {
 
-    PropertyEntity create(PropertyEntity createProperty);
+    PropertyEntity create(PropertyEntity property);
 
-    // Optional: add list method
-    List<PropertyEntity> getAllPosts();
     List<PropertyEntity> getAll();
+
     PropertyEntity getById(Long id);
-    PropertyEntity update(Long id, PropertyEntity post);
+
+    PropertyEntity update(Long id, PropertyEntity property);
+
     void delete(Long id);
-   
 }

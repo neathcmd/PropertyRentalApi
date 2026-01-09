@@ -49,6 +49,11 @@ public class UserEntity implements UserDetails {
     @Builder.Default
     private Set<RoleEntity> roles = new HashSet<>();
 
+    @OneToMany(mappedBy = "createdBy", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private Set<PropertyEntity> properties = new HashSet<>();
+
     @Column(name = "enabled")
     private boolean enabled;
 
