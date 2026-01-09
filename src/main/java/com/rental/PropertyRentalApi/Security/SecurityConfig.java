@@ -1,7 +1,5 @@
 package com.rental.PropertyRentalApi.Security;
 
-import com.rental.PropertyRentalApi.Security.JwtAuthFilter;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
