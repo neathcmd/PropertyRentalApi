@@ -1,15 +1,14 @@
-//package com.rental.PropertyRentalApi.Repository;
-//
-//import com.rental.PropertyRentalApi.Entity.ReviewEntity;
-//import org.springframework.data.jpa.repository.JpaRepository;
-//
-//import java.util.List;
-//import java.util.Optional;
-//
-//public interface ReviewRepository extends JpaRepository<ReviewEntity,Long> {
-//    boolean existsByUserIdAndPropertyId(Long userId, Long propertyId);
-//
-//    List<ReviewEntity> findByPropertyId(Long propertyId);
-//
-//    Optional<ReviewEntity> findByUserIdAndPropertyId(Long userId, Long propertyId);
-//}
+package com.rental.PropertyRentalApi.Repository;
+
+import com.rental.PropertyRentalApi.Entity.ReviewEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
+
+    boolean existsByProperty_IdAndUser_Id(Long propertyId, Long userId);
+
+    @Query("SELECT AVG(r.rating) FROM ReviewEntity r WHERE r.property.id = :propertyId")
+    Double findAverageRating(@Param("propertyId") Long propertyId);
+}
