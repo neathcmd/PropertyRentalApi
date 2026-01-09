@@ -76,11 +76,11 @@ public class SecurityConfig {
                 // AUTHORIZATION RULES
                 // ============================
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/users/**").hasRole("admin")
-                        .requestMatchers("/api/properties/**").hasAnyRole("admin", "agent")
-                        .anyRequest().authenticated()
-                )
+                                // Public endpoints (login, register)
+                                .requestMatchers("/api/auth/**").permitAll()
+                                .requestMatchers("/api/users/**").hasRole("admin")
+                                .requestMatchers("/api/properties/**").hasAnyRole("admin", "agent")
+
 
                 // DEV: allow all endpoints
 //                                .anyRequest().permitAll()
@@ -88,8 +88,8 @@ public class SecurityConfig {
                 // ============================
                 // PROD (UNCOMMENT)
                 // ============================
-//                         .anyRequest().authenticated()
-//                )
+                         .anyRequest().authenticated()
+                )
 
                 // Stateless session (JWT-ready)
                 .sessionManagement(session -> session
