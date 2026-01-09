@@ -8,6 +8,6 @@ public class PropertyRentalApiApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(PropertyRentalApiApplication.class, args);
-        System.out.println("Hello java");
+        System.out.println("Application is running successfully.");
 	}
 }

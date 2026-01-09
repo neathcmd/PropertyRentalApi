@@ -6,7 +6,9 @@ import com.rental.PropertyRentalApi.DTO.request.AuthRequest;
 import com.rental.PropertyRentalApi.DTO.response.AuthResponse;
 import com.rental.PropertyRentalApi.DTO.response.UserResponse;
 import com.rental.PropertyRentalApi.DTO.response.ApiResponse;
+import com.rental.PropertyRentalApi.Entity.RoleEntity;
 import com.rental.PropertyRentalApi.Entity.UserEntity;
+import com.rental.PropertyRentalApi.Repository.RoleRepository;
 import com.rental.PropertyRentalApi.Repository.UserRepository;
 import com.rental.PropertyRentalApi.Service.AuthService;
 import com.rental.PropertyRentalApi.Service.JwtService;
@@ -24,6 +26,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -32,6 +37,7 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final CookieHelper cookieHelper;
+    private final RoleRepository roleRepository;
 
     @Override
     public RegisterResponse register(
@@ -47,6 +53,14 @@ public class AuthServiceImpl implements AuthService {
             throw badRequest("Email already exists");
         }
 
+        // ========================
+        // FETCH DEFAULT ROLE FROM DATABASE
+//         ========================
+//        RoleEntity defaultRole = roleRepository.findByName("user")
+//                .orElseThrow(() -> notFound("Default role not found."));
+
+
+        // Create new user
         UserEntity user = new UserEntity();
         user.setFullname(request.getFullname());
         user.setUsername(request.getUsername());
@@ -54,7 +68,34 @@ public class AuthServiceImpl implements AuthService {
         user.setPhone(request.getPhone());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
+        // ========================
+        // ASSIGN ROLE TO USER
+        // ========================
+        if (request.getRoles() != null && !request.getRoles().isEmpty()) {
+            // fetch all roles by IDs from request
+            List<RoleEntity> roles = roleRepository.findAllById(request.getRoles());
+            if (roles.size() != request.getRoles().size()) {
+                throw badRequest("Some roles not found.");
+            }
+            user.setRoles(new HashSet<>(roles)); // assign roles to user
+        } else {
+            // fallback to default role if no roles provided
+            RoleEntity defaultRole = roleRepository.findByName("user")
+                    .orElseThrow(() -> notFound("Default role not found."));
+            user.getRoles().add(defaultRole);
+        }
+
+
+        // saved user
         UserEntity savedUser = userRepository.save(user);
+
+        // ========================
+        // EXTRACT ROLE NAME
+        // ========================
+        List<String> roles = user.getRoles()
+                .stream()
+                .map(RoleEntity::getName)
+                .toList();
 
         // ========================
         // GENERATE TOKENS
@@ -62,7 +103,8 @@ public class AuthServiceImpl implements AuthService {
         String accessToken = jwtService.generateAccessToken(
                 String.valueOf(savedUser.getId()),
                 savedUser.getEmail(),
-                savedUser.getUsername()
+                savedUser.getUsername(),
+                roles
         );
 
         String refreshToken = jwtService.generateRefreshToken(
@@ -90,7 +132,8 @@ public class AuthServiceImpl implements AuthService {
                 savedUser.getId(),
                 savedUser.getFullname(),
                 savedUser.getUsername(),
-                savedUser.getEmail()
+                savedUser.getEmail(),
+                roles
         );
 
         return new ApiResponse<>(
@@ -105,6 +148,7 @@ public class AuthServiceImpl implements AuthService {
             AuthRequest request,
             HttpServletResponse response
     ) {
+
         UserEntity user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> notFound("User not found."));
 
@@ -112,11 +156,20 @@ public class AuthServiceImpl implements AuthService {
             throw unauthorized("Invalid password");
         }
 
+        // ========================
+        // EXTRACT ROLE NAME
+        // ========================
+        List<String> roles = user.getRoles()
+                .stream()
+                .map(RoleEntity::getName)
+                .toList();
+
         UserResponse userResponse = new UserResponse(
                 user.getId(),
                 user.getFullname(),
                 user.getUsername(),
-                user.getEmail()
+                user.getEmail(),
+                roles
         );
 
         // ========================
@@ -125,7 +178,8 @@ public class AuthServiceImpl implements AuthService {
         String accessToken = jwtService.generateAccessToken(
                 String.valueOf(user.getId()),
                 user.getEmail(),
-                user.getUsername()
+                user.getUsername(),
+                roles
         );
 
         String refreshToken = jwtService.generateRefreshToken(
@@ -154,8 +208,8 @@ public class AuthServiceImpl implements AuthService {
         // ========================
         return new AuthResponse(
                 "Login successfully",
-                userResponse,
-                accessToken
+                accessToken,
+                userResponse
         );
     }
 

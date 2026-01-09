@@ -1,5 +1,8 @@
 package com.rental.PropertyRentalApi.Security;
 
+import com.rental.PropertyRentalApi.Security.JwtAuthFilter;
+
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -9,12 +12,16 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 
+//@EnableMethodSecurity
 @Configuration
 @EnableWebSecurity
-// @SuppressWarnings("unused")
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final JwtAuthFilter jwtAuthFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -71,14 +78,16 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                                 // Public endpoints (login, register)
                                 .requestMatchers("/api/auth/**").permitAll()
+                                .requestMatchers("/api/users/**").hasRole("admin")
+                                .requestMatchers("/api/properties/**").hasAnyRole("admin", "agent")
 
-                                // DEV: allow all endpoints
-                                .anyRequest().permitAll()
+                // DEV: allow all endpoints
+                               // .anyRequest().permitAll()
 
-                        // ============================
-                        // PROD (UNCOMMENT)
-                        // ============================
-                        // .anyRequest().authenticated()
+                // ============================
+                // PROD (UNCOMMENT)
+                // ============================
+                         .anyRequest().authenticated()
                 )
 
                 // Stateless session (JWT-ready)
@@ -87,7 +96,7 @@ public class SecurityConfig {
                 );
 
         // PROD: add JWT filter here
-        // http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
