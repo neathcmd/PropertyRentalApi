@@ -1,6 +1,6 @@
 package com.rental.PropertyRentalApi.Entity;
 
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,20 +17,21 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Table(name = "properties")
 public class PropertyEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(name = "title")
     private String title;
 
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(nullable = false)
+    @Column(name = "address")
     private String address;
 
-    @Column(nullable = false)
+    @Column(name = "price")
     private BigDecimal price;
 
     @Column(name = "electricity_cost")
@@ -39,20 +40,34 @@ public class PropertyEntity {
     @Column(name = "water_cost")
     private BigDecimal waterCost;
 
-    // 🔗 Relationship to User
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", nullable = false)
+    @JsonIgnore
     private UserEntity createdBy;
 
-    @Column(nullable = false)
+
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(nullable = false)
+    @Column(name = "updatedAt")
     private LocalDateTime updatedAt;
 
-    @Column(nullable = false)
-    private boolean isDeleted;
+    @Column(nullable = true)
+    private boolean deleted;
 
-    public void setIsDeleted(boolean b) {
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+        deleted = false;
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
+
+    public void setIsDeleted(boolean isDeleted) {
+        this.deleted = isDeleted;
     }
 }

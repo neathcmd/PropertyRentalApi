@@ -55,7 +55,7 @@ public class AuthServiceImpl implements AuthService {
 
         // ========================
         // FETCH DEFAULT ROLE FROM DATABASE
-        // ========================
+//         ========================
 //        RoleEntity defaultRole = roleRepository.findByName("user")
 //                .orElseThrow(() -> notFound("Default role not found."));
 

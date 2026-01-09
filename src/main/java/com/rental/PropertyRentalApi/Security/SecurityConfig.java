@@ -78,13 +78,15 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                                 // Public endpoints (login, register)
                                 .requestMatchers("/api/auth/**").permitAll()
+                                .requestMatchers("/api/users/**").hasRole("admin")
+                                .requestMatchers("/api/properties/**").hasAnyRole("admin", "agent")
 
-                                // DEV: allow all endpoints
-//                                .anyRequest().permitAll()
+                // DEV: allow all endpoints
+                               // .anyRequest().permitAll()
 
-                        // ============================
-                        // PROD (UNCOMMENT)
-                        // ============================
+                // ============================
+                // PROD (UNCOMMENT)
+                // ============================
                          .anyRequest().authenticated()
                 )
 
@@ -94,7 +96,7 @@ public class SecurityConfig {
                 );
 
         // PROD: add JWT filter here
-         http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -104,5 +106,4 @@ public class SecurityConfig {
         // BCrypt is safe for both DEV and PROD
         return new BCryptPasswordEncoder();
     }
-
 }

@@ -66,7 +66,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             }
         }
 
-        log.info("Jwt token extracted: {}", token);
+        log.info("Jwt token extracted successfully.");
         filterChain.doFilter(request, response);
     }
 }
