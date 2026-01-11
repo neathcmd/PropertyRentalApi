@@ -1,16 +1,24 @@
 package com.rental.PropertyRentalApi.Service.Impl;
 
+import com.rental.PropertyRentalApi.DTO.request.PropertyCreateRequest;
+import com.rental.PropertyRentalApi.DTO.request.PropertyUpdateRequest;
+import com.rental.PropertyRentalApi.DTO.response.PaginatedResponse;
+import com.rental.PropertyRentalApi.DTO.response.PropertyResponse;
 import com.rental.PropertyRentalApi.Entity.PropertyEntity;
 import com.rental.PropertyRentalApi.Entity.UserEntity;
+import com.rental.PropertyRentalApi.Mapper.MapperFunction;
 import com.rental.PropertyRentalApi.Repository.PropertyRepository;
-import com.rental.PropertyRentalApi.Service.JwtService;
+import com.rental.PropertyRentalApi.Service.Jwt.JwtService;
 import com.rental.PropertyRentalApi.Service.PropertyService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
+
+import static com.rental.PropertyRentalApi.Exception.ErrorsExceptionFactory.*;
 
 @Service
 @RequiredArgsConstructor
@@ -18,75 +26,177 @@ public class PropertyServiceImpl implements PropertyService {
 
     private final PropertyRepository propertyRepository;
     private final JwtService jwtService;
+    private final MapperFunction mapperFunction;
 
-    // ================= CREATE =================
+    // ==============
+    // GET ALL WITH PAGINATION
+    // ==============
     @Override
-    @Transactional
-    public PropertyEntity create(PropertyEntity createProperty) {
+    public PaginatedResponse<PropertyResponse> getAll(int page, int size) {
+        // Create pageable object (pages are 0-indexed)
+        Pageable pageable = PageRequest.of(
+                page,
+                size
+        );
 
-        UserEntity currentUser = jwtService.getCurrentUser();
+        // Fetch paginated data
+        Page<PropertyEntity> propertyPage = propertyRepository.findAll(pageable);
 
-        createProperty.setId(null);                // prevent overwrite
-        createProperty.setCreatedBy(currentUser);  // owner
-        createProperty.setIsDeleted(false);
-        createProperty.setCreatedAt(LocalDateTime.now());
-
-        return propertyRepository.save(createProperty);
-    }
-
-    // ================= READ ALL =================
-    @Override
-    public List<PropertyEntity> getAll() {
-        return propertyRepository.findByIsDeletedFalse();
-    }
-
-    // ================= READ BY ID =================
-    @Override
-    public PropertyEntity getById(Long id) {
-        return (PropertyEntity) propertyRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new RuntimeException("Property not found with id: " + id));
-    }
-    // ================= UPDATE =================
-    @Override
-    @Transactional
-    public PropertyEntity update(Long id, PropertyEntity request) {
-
-        UserEntity currentUser = jwtService.getCurrentUser();
-
-        PropertyEntity property = getById(id);
-
-        // 🔒 Only owner can update
-        if (!property.getCreatedBy().getId().equals(currentUser.getId())) {
-            throw new RuntimeException("You are not allowed to update this property");
+        // Check if page is empty
+        if (propertyPage.isEmpty()) {
+            throw notFound("Properties not found.");
         }
 
-        // ✏️ Update allowed fields ONLY
-        property.setTitle(request.getTitle());
-        property.setDescription(request.getDescription());
-        property.setPrice(request.getPrice());
-        property.setAddress(request.getAddress());
-        property.setUpdatedAt(LocalDateTime.now());
+        // Map entities to responses
+        List<PropertyResponse> propertyResponses = propertyPage.getContent()
+                .stream()
+                .map(mapperFunction::toPropertyResponse)
+                .toList();
 
-        return propertyRepository.save(property);
+        // Build pagination metadata
+        PaginatedResponse.PaginationMeta paginationMeta = new PaginatedResponse.PaginationMeta(
+                propertyPage.getNumber() + 1,
+                propertyPage.getSize(),
+                propertyPage.getTotalElements(),
+                propertyPage.getTotalPages(),
+                propertyPage.hasNext(),
+                propertyPage.hasPrevious()
+        );
+
+        return new PaginatedResponse<>(propertyResponses, paginationMeta);
     }
 
-    // ================= DELETE (SOFT) =================
+    // ==============
+    // GET ALL
+    // ==============
+//    @Override
+//    public List<PropertyResponse> getAll() {
+//
+//        List<PropertyEntity> properties = propertyRepository.findAll();
+//        if (properties.isEmpty()) {
+//            throw notFound("Properties not found.");
+//        }
+//
+//        return properties.stream()
+//                .map(mapperFunction::toPropertyResponse)
+//                .toList();
+//    }
+
+    // ==============
+    // GET BY ID
+    // ==============
     @Override
-    @Transactional
+    public PropertyResponse getById(Long id) {
+
+        PropertyEntity property = propertyRepository.findById(id)
+                .orElseThrow(() -> notFound("Property not found."));
+
+        return mapperFunction.toPropertyResponse(property);
+    }
+
+    // ==============
+    // CREATE
+    // ==============
+    @Override
+    public PropertyResponse create(PropertyCreateRequest request) {
+
+        // ==============
+        // GET CURRENT USER
+        // ==============
+        UserEntity currentUser = jwtService.getCurrentUser();
+
+        // ==============
+        // CHECK IF USER EXIST
+        // ==============
+        if (currentUser == null) {
+            throw unauthorized("Authentication required - no authenticated user found");
+        }
+
+        // ==============
+        // MAP REQUEST TO ENTITY
+        // ==============
+        PropertyEntity property = mapperFunction.toPropertyEntity(request);
+
+        // ==============
+        // SET CREATED BY USER
+        // ==============
+        property.setCreatedBy(currentUser);
+
+        // ==============
+        // SAVE AND RETURN NEW PROPERTY
+        // ==============
+        PropertyEntity savedProperty =  propertyRepository.save(property);
+        return mapperFunction.toPropertyResponse(savedProperty);
+    }
+
+    // ==============
+    // UPDATE
+    // ==============
+    @Override
+    public PropertyResponse update(Long id, PropertyUpdateRequest request) {
+        // ==============
+        // GET CURRENT USER
+        // ==============
+        UserEntity currentUser = jwtService.getCurrentUser();
+
+        // ==============
+        // FIND PROPERTY TO UPDATE
+        // ==============
+        PropertyEntity findPropertyAndUpdate = propertyRepository.findById(id)
+                .orElseThrow(() -> notFound("Property not found."));
+
+        // ==============
+        // CHECK PERMISSIONS
+        // ==============
+        if (!findPropertyAndUpdate.getCreatedBy().getId().equals(currentUser.getId())) {
+            throw forbidden("You are not allowed to update this property");
+        }
+
+        // ==============
+        // UPDATE PROPERTY DETAILS
+        // ==============
+        mapperFunction.updatePropertyEntity(request, findPropertyAndUpdate);
+
+        return mapperFunction.toPropertyResponse(findPropertyAndUpdate);
+    }
+
+    // ==============
+    // DELETE
+    // ==============
+    @Override
     public void delete(Long id) {
+        PropertyEntity property = propertyRepository.findById(id)
+                .orElseThrow(() -> notFound("Property not found."));
+        propertyRepository.delete(property);
+    }
 
+    // ==============
+    // GET BY CURRENT USER
+    // ==============
+    @Override
+    public List<PropertyResponse> getPropertiesByCurrentUser() {
+        // ==============
+        // GET CURRENT USER
+        // ==============
         UserEntity currentUser = jwtService.getCurrentUser();
 
-        PropertyEntity property = getById(id);
+        // ==============
+        // GET USER'S PROPERTIES
+        // ==============
+        List<PropertyEntity> propertiesByCurrentUser = propertyRepository.findAllByCreatedBy(currentUser);
 
-        // 🔒 Only owner can delete
-        if (!property.getCreatedBy().getId().equals(currentUser.getId())) {
-            throw new RuntimeException("You are not allowed to delete this property");
+        // ==============
+        // CHECK IF USER HAS PROPERTIES
+        // ==============
+        if (propertiesByCurrentUser.isEmpty()) {
+            throw notFound("You have not created any properties yet.");
         }
 
-        property.setIsDeleted(true);
-        property.setUpdatedAt(LocalDateTime.now());
-
-        propertyRepository.save(property);
+        // ==============
+        // MAP TO RESPONSE DTO
+        // ==============
+        return propertiesByCurrentUser.stream()
+                .map(mapperFunction::toPropertyResponse)
+                .toList();
     }
 }

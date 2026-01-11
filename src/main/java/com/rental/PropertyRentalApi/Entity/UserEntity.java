@@ -6,17 +6,19 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Data
 @Entity
 @Table(name = "users")
-@Builder
-@AllArgsConstructor
+@Getter
+@Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class UserEntity implements UserDetails {
 
     @Id
@@ -32,7 +34,7 @@ public class UserEntity implements UserDetails {
     @Column(name = "email", unique = true, nullable = false)
     private String email;
 
-    @Column(name = "password", nullable = false)
+    @Column(nullable = false)
     private String password;
 
     @Column(name = "phone", unique = true)
@@ -44,9 +46,9 @@ public class UserEntity implements UserDetails {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
+    @Builder.Default
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @Builder.Default
     private Set<RoleEntity> roles = new HashSet<>();
 
     @OneToMany(mappedBy = "createdBy", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -54,12 +56,30 @@ public class UserEntity implements UserDetails {
     @EqualsAndHashCode.Exclude
     private Set<PropertyEntity> properties = new HashSet<>();
 
-    @Column(name = "enabled")
-    private boolean enabled;
+    @Column(nullable = false)
+    private boolean enabled = true;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 
     // =========================
     // UserDetails Implementation
     // =========================
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return roles.stream()
@@ -69,17 +89,17 @@ public class UserEntity implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return true; // account never expires
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return true; // account never locked
+        return true;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return true; // credentials never expire
+        return true;
     }
 
     @Override
