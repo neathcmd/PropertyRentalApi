@@ -6,13 +6,13 @@ import lombok.*;
 import java.util.HashSet;
 import java.util.Set;
 
+@Entity
+@Table(name = "roles")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Entity
-@Table(name = "roles")
 public class RoleEntity {
 
     @Id
@@ -23,6 +23,7 @@ public class RoleEntity {
     private String name;
 
     @ManyToMany(mappedBy = "roles")
+    @Builder.Default
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private Set<UserEntity> users = new HashSet<>();

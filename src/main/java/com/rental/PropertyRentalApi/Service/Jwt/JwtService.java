@@ -1,4 +1,4 @@
-package com.rental.PropertyRentalApi.Service;
+package com.rental.PropertyRentalApi.Service.Jwt;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;

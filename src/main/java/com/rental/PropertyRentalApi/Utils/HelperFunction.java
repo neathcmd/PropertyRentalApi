@@ -1,6 +1,7 @@
 package com.rental.PropertyRentalApi.Utils;
 
-import com.rental.PropertyRentalApi.Entity.UserEntity;
+import com.rental.PropertyRentalApi.DTO.request.UserCreateRequest;
+import com.rental.PropertyRentalApi.DTO.request.UserUpdateRequest;
 import com.rental.PropertyRentalApi.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -13,19 +14,19 @@ public class HelperFunction {
     @Autowired
     private UserRepository userRepository;
 
-    // ================
+    // =================
     // EMAIL FORMAT VALIDATOR
-    // ================
+    // =================
     public void validateEmailFormat(String email) {
         if (email == null || !email.contains("@") || !email.endsWith(".com")) {
             throw badRequest("Email must contain '@' and end with '.com'");
         }
     }
 
-    // ================
-    // CREATE FIELDS VALIDATOR
-    // ================
-    public void validateCreate(UserEntity request) {
+    // =================
+    // CREATE VALIDATION
+    // =================
+    public void validateCreate(UserCreateRequest request) {
         validateEmailFormat(request.getEmail());
 
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
@@ -37,22 +38,17 @@ public class HelperFunction {
         }
     }
 
-    // ================
-    // UPDATE FIELDS VALIDATOR
-    // ================
-    public void validateUpdate(Long id, UserEntity request) {
-        validateEmailFormat(request.getEmail());
+    // =================
+    // UPDATE VALIDATION (PROFILE ONLY)
+    // =================
+    public void validateUpdate(UserUpdateRequest request) {
 
-        userRepository.findByEmail(request.getEmail()).ifPresent(existing -> {
-            if (!existing.getId().equals(id)) {
-                throw badRequest("Email is already used by another user.");
-            }
-        });
+        if (request.getFullname() == null || request.getFullname().isBlank()) {
+            throw badRequest("Full name must not be empty.");
+        }
 
-        userRepository.findByUsername(request.getUsername()).ifPresent(existing -> {
-            if (!existing.getId().equals(id)) {
-                throw badRequest("Username is already used by another user.");
-            }
-        });
+        if (request.getPhone() == null || request.getPhone().isBlank()) {
+            throw badRequest("Phone number must not be empty.");
+        }
     }
 }

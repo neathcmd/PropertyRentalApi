@@ -1,30 +1,131 @@
 package com.rental.PropertyRentalApi.Controller;
 
-import com.rental.PropertyRentalApi.Entity.PropertyEntity;
-import com.rental.PropertyRentalApi.Service.JwtService;
+import com.rental.PropertyRentalApi.DTO.request.PropertyCreateRequest;
+import com.rental.PropertyRentalApi.DTO.request.PropertyUpdateRequest;
+import com.rental.PropertyRentalApi.DTO.response.ApiResponse;
+import com.rental.PropertyRentalApi.DTO.response.PaginatedResponse;
+import com.rental.PropertyRentalApi.DTO.response.PropertyResponse;
 import com.rental.PropertyRentalApi.Service.PropertyService;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import lombok.RequiredArgsConstructor;
+import java.util.List;
 
 @RestController
-@RequestMapping("/api/properties")
 @RequiredArgsConstructor
+@RequestMapping("/api/properties")
 public class PropertyController {
 
     private final PropertyService propertyService;
-    private final JwtService jwtService;
 
-    // Create Property
-    @PostMapping
-    public ResponseEntity<PropertyEntity> createProperty(
-            @RequestBody PropertyEntity propertyRequest
+    // ==============
+    // GET ALL WITH PAGINATION
+    // ==============
+    @GetMapping
+    public ApiResponse<PaginatedResponse<PropertyResponse>> getAllProperties(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size
     ) {
-        PropertyEntity createdProperty = propertyService.create(propertyRequest);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdProperty);
+        // Convert page to 0-indexed for service layer
+        PaginatedResponse<PropertyResponse> paginatedProperties =
+                propertyService.getAll(page - 1, size);
+
+        return new ApiResponse<>(
+                200,
+                "Get all properties successfully.",
+                paginatedProperties
+        );
     }
 
-}
+    // ========================
+    // GET ALL
+    // ========================
+//    @GetMapping
+//    public ApiResponse<List<PropertyResponse>> getAllProperties() {
+//        List<PropertyResponse> properties = propertyService.getAll();
+//
+//        return new ApiResponse<>(
+//                200,
+//                "Get all properties successfully.",
+//                properties
+//        );
+//    }
 
+    // ========================
+    // GET BY ID
+    // ========================
+    @GetMapping("/{id}")
+    public ApiResponse<PropertyResponse> getPropertById(@PathVariable Long id) {
+        PropertyResponse property = propertyService.getById(id);
+
+        return new ApiResponse<>(
+                200,
+                "Get properties successfully.",
+                property
+        );
+    }
+
+    // ==============
+    // CREATE
+    // ==============
+    @PostMapping
+    public ApiResponse<PropertyResponse> createdProperty(
+            @Valid
+            @RequestBody PropertyCreateRequest request) {
+        PropertyResponse property = propertyService.create(request);
+
+        return new ApiResponse<>(
+                201,
+                "Created Property successfully.",
+                property
+        );
+    }
+
+    // ========================
+    // UPDATE
+    // ========================
+    @PutMapping("/{id}")
+    public ApiResponse<PropertyResponse> updateProperty(
+            @PathVariable Long id,
+            @Valid @RequestBody PropertyUpdateRequest request
+    ) {
+        PropertyResponse updatedProperty = propertyService.update(id, request);
+
+        return new ApiResponse<>(
+                200,
+                "Updated property successfully.",
+                updatedProperty
+        );
+    }
+
+    // ========================
+    // DELETE
+    // ========================
+    @DeleteMapping("/{id}")
+    public ApiResponse<Void> deleteProperty(@PathVariable Long id) {
+
+        propertyService.delete(id);
+
+        return new ApiResponse<>(
+                204,
+                "Property deleted successfully."
+        );
+    }
+
+    // ========================
+    // GET CURRENT USER PROPERTIES
+    // ========================
+    @GetMapping("/my-properties")
+    public ApiResponse<List<PropertyResponse>> getMyProperties() {
+
+        List<PropertyResponse> properties =
+                propertyService.getPropertiesByCurrentUser();
+
+        return new ApiResponse<>(
+                200,
+                "Get your properties successfully.",
+                properties
+        );
+    }
+}

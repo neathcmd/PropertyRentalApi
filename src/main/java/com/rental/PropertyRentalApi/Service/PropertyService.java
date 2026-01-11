@@ -1,19 +1,20 @@
-
 package com.rental.PropertyRentalApi.Service;
 
-import com.rental.PropertyRentalApi.Entity.PropertyEntity;
+import com.rental.PropertyRentalApi.DTO.request.PropertyCreateRequest;
+import com.rental.PropertyRentalApi.DTO.request.PropertyUpdateRequest;
+import com.rental.PropertyRentalApi.DTO.response.PropertyResponse;
+import com.rental.PropertyRentalApi.DTO.response.PaginatedResponse;
 
 import java.util.List;
 
 public interface PropertyService {
+    PaginatedResponse<PropertyResponse> getAll(int page, int size);
 
-    PropertyEntity create(PropertyEntity createProperty);
-
-    // Optional: add list method
-    List<PropertyEntity> getAllPosts();
-    List<PropertyEntity> getAll();
-    PropertyEntity getById(Long id);
-    PropertyEntity update(Long id, PropertyEntity post);
+//    List<PropertyResponse> getAll();
+    PropertyResponse getById(Long id);
+    PropertyResponse create(PropertyCreateRequest request);
+    PropertyResponse update(Long id, PropertyUpdateRequest request);
     void delete(Long id);
-   
+
+    List<PropertyResponse> getPropertiesByCurrentUser();
 }
