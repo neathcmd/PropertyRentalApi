@@ -1,15 +1,15 @@
 package com.rental.PropertyRentalApi.Controller;
 
+import com.rental.PropertyRentalApi.DTO.request.UserCreateRequest;
+import com.rental.PropertyRentalApi.DTO.request.UserUpdateRequest;
 import com.rental.PropertyRentalApi.DTO.response.ApiResponse;
+import com.rental.PropertyRentalApi.DTO.response.PaginatedResponse;
 import com.rental.PropertyRentalApi.DTO.response.UserResponse;
-import com.rental.PropertyRentalApi.Entity.UserEntity;
 import com.rental.PropertyRentalApi.Service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
-import static com.rental.PropertyRentalApi.Exception.ErrorsExceptionFactory.notFound;
 
 @RestController
 @RequiredArgsConstructor
@@ -18,46 +18,97 @@ public class UserController {
 
     private final UserService userService;
 
+    // ==============
+    // GET ALL USERS WITH PAGINATION
+    // ==============
     @GetMapping
-    public ApiResponse<List<UserResponse>> getAllUser() {
-        List<UserResponse> users = userService.getAll()
-                .stream()
-                .map(UserResponse::new)
-                .toList();
-
-        return new ApiResponse<>(
-                200,
-                "Get user successfully.",
-                users
-        );
-    }
-
-    @GetMapping("/{id}")
-    public ApiResponse<UserEntity> getUserById(@PathVariable Long id) {
-        return new ApiResponse<>(
-                200,
-                "Get user successfully.",
-                userService.getById(id)
-        );
-    }
-
-    @PutMapping("/{id}")
-    public ApiResponse<UserEntity> updateUser(
-            @PathVariable Long id,
-            @RequestBody UserEntity updatedUser
+    public ApiResponse<PaginatedResponse<UserResponse>> getAllUsers(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size
     ) {
+        PaginatedResponse<UserResponse> paginatedUsers =
+                userService.getAll(page -1, size);
+
         return new ApiResponse<>(
                 200,
-                "User update successfully.",
-                userService.update(id, updatedUser)
+                "Get all users successfully.",
+                paginatedUsers
         );
     }
 
+    // =====================
+    // GET ALL USERS
+    // =====================
+//    @GetMapping
+//    public ApiResponse<List<UserResponse>> getAllUsers() {
+//        List<UserResponse> getAllUser = userService.getAll();
+//
+//        return new ApiResponse<>(
+//                200,
+//                "Get users successfully.",
+//                getAllUser
+//        );
+//    }
+
+    // =====================
+    // GET USER BY ID
+    // =====================
+    @GetMapping("/{id}")
+    public ApiResponse<UserResponse> getUserById(@PathVariable Long id) {
+        UserResponse getUserId = userService.getById(id);
+
+        return new ApiResponse<>(
+                200,
+                "Get user successfully.",
+                getUserId
+        );
+    }
+
+    // =====================
+    // CREATE USER
+    // =====================
+    @PostMapping
+    public ApiResponse<UserResponse> createUser(
+            @RequestBody UserCreateRequest request
+    ) {
+        UserResponse createdUser = userService.create(request);
+
+        return new ApiResponse<>(
+                201,
+                "User created successfully.",
+                createdUser
+        );
+    }
+
+    // =====================
+    // UPDATE USER (PROFILE ONLY)
+    // =====================
+    @PutMapping("/{id}")
+    public ApiResponse<UserResponse> updateUser(
+            @PathVariable Long id,
+            @RequestBody UserUpdateRequest request
+    ) {
+        UserResponse updatedUser = userService.update(id, request);
+
+        return new ApiResponse<>(
+                200,
+                "User updated successfully.",
+                updatedUser
+        );
+    }
+
+    // =====================
+    // DELETE USER
+    // =====================
     @DeleteMapping("/{id}")
     public ApiResponse<String> deleteUser(@PathVariable Long id) {
+
         userService.delete(id);
+
         return new ApiResponse<>(
-                "User delete successfully."
+                200,
+                "User deleted successfully.",
+                null
         );
     }
 }

@@ -8,10 +8,11 @@ import com.rental.PropertyRentalApi.DTO.response.UserResponse;
 import com.rental.PropertyRentalApi.DTO.response.ApiResponse;
 import com.rental.PropertyRentalApi.Entity.RoleEntity;
 import com.rental.PropertyRentalApi.Entity.UserEntity;
+import com.rental.PropertyRentalApi.Mapper.MapperFunction;
 import com.rental.PropertyRentalApi.Repository.RoleRepository;
 import com.rental.PropertyRentalApi.Repository.UserRepository;
 import com.rental.PropertyRentalApi.Service.AuthService;
-import com.rental.PropertyRentalApi.Service.JwtService;
+import com.rental.PropertyRentalApi.Service.Jwt.JwtService;
 import com.rental.PropertyRentalApi.Utils.CookieHelper;
 
 
@@ -28,6 +29,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -38,60 +40,55 @@ public class AuthServiceImpl implements AuthService {
     private final JwtService jwtService;
     private final CookieHelper cookieHelper;
     private final RoleRepository roleRepository;
+    private final MapperFunction mapperFunction;
 
     @Override
     public RegisterResponse register(
             RegisterRequest request,
             HttpServletResponse response
     ) {
-
+        // Validate username
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
             throw badRequest("Username already exists");
         }
 
+        // Validate email
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw badRequest("Email already exists");
         }
 
         // ========================
-        // FETCH DEFAULT ROLE FROM DATABASE
-//         ========================
-//        RoleEntity defaultRole = roleRepository.findByName("user")
-//                .orElseThrow(() -> notFound("Default role not found."));
+        // MAP REQUEST TO ENTITY USING MAPSTRUCT
+        // ========================
+        UserEntity user = mapperFunction.toUserEntity(request);
 
-
-        // Create new user
-        UserEntity user = new UserEntity();
-        user.setFullname(request.getFullname());
-        user.setUsername(request.getUsername());
-        user.setEmail(request.getEmail());
-        user.setPhone(request.getPhone());
+        // Set encoded password (can't be done by MapStruct)
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
         // ========================
-        // ASSIGN ROLE TO USER
+        // ASSIGN ROLES TO USER
         // ========================
         if (request.getRoles() != null && !request.getRoles().isEmpty()) {
-            // fetch all roles by IDs from request
             List<RoleEntity> roles = roleRepository.findAllById(request.getRoles());
             if (roles.size() != request.getRoles().size()) {
                 throw badRequest("Some roles not found.");
             }
-            user.setRoles(new HashSet<>(roles)); // assign roles to user
+            user.setRoles(new HashSet<>(roles));
         } else {
-            // fallback to default role if no roles provided
             RoleEntity defaultRole = roleRepository.findByName("user")
                     .orElseThrow(() -> notFound("Default role not found."));
-            user.getRoles().add(defaultRole);
+            user.setRoles(new HashSet<>(Set.of(defaultRole)));
         }
 
-
-        // saved user
+        // ========================
+        // SAVE USER
+        // ========================
         UserEntity savedUser = userRepository.save(user);
 
         // ========================
-        // EXTRACT ROLE NAME
+        // EXTRACT ROLE NAMES
         // ========================
+        // List<String> roles = mapperFunction.mapRolesToStringList(savedUser.getRoles());
         List<String> roles = user.getRoles()
                 .stream()
                 .map(RoleEntity::getName)
@@ -128,13 +125,10 @@ public class AuthServiceImpl implements AuthService {
                 259200 // 30 days
         );
 
-        UserResponse userResponse = new UserResponse(
-                savedUser.getId(),
-                savedUser.getFullname(),
-                savedUser.getUsername(),
-                savedUser.getEmail(),
-                roles
-        );
+        // ========================
+        // MAP USER TO RESPONSE USING MAPSTRUCT
+        // ========================
+        UserResponse userResponse = mapperFunction.toUserResponse(savedUser);
 
         return new ApiResponse<>(
                 201,
@@ -164,13 +158,10 @@ public class AuthServiceImpl implements AuthService {
                 .map(RoleEntity::getName)
                 .toList();
 
-        UserResponse userResponse = new UserResponse(
-                user.getId(),
-                user.getFullname(),
-                user.getUsername(),
-                user.getEmail(),
-                roles
-        );
+        // ========================
+        // MAP USER TO RESPONSE USING MAPSTRUCT
+        // ========================
+        UserResponse userResponse = mapperFunction.toUserResponse(user);
 
         // ========================
         // GENERATE TOKENS

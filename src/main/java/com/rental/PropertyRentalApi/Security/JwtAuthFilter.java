@@ -1,14 +1,12 @@
 package com.rental.PropertyRentalApi.Security;
 
-//import com.rental.PropertyRentalApi.Service.Impl.UserDetailsServiceImpl;
-import com.rental.PropertyRentalApi.Service.JwtService;
+import com.rental.PropertyRentalApi.Service.Jwt.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-//import org.springframework.context.annotation.Bean;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
