@@ -24,3 +24,31 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         return user;
     }
 }
+
+//package com.rental.PropertyRentalApi.Service.Impl;
+//
+//import com.rental.PropertyRentalApi.Repository.UserRepository;
+//import lombok.RequiredArgsConstructor;
+//
+//import org.springframework.security.core.userdetails.UserDetails;
+//import org.springframework.security.core.userdetails.UserDetailsService;
+//import org.springframework.stereotype.Service;
+//
+//import static com.rental.PropertyRentalApi.Exception.ErrorsExceptionFactory.*;
+//
+//@Service
+//@RequiredArgsConstructor
+//public class UserDetailsServiceImpl implements UserDetailsService {
+//
+//    private final UserRepository userRepository;
+//
+//    @Override
+//    public UserDetails loadUserByUsername(String username) {
+//        if (username == null || username.isBlank()) {
+//            throw badRequest("Username is required.");
+//        }
+//
+//        return userRepository.findByUsername(username)
+//                .orElseThrow(() -> notFound("User not found."));
+//    }
+//}
