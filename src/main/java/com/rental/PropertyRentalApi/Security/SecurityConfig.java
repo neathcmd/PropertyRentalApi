@@ -20,6 +20,8 @@ import org.springframework.web.cors.CorsConfiguration;
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -87,9 +89,19 @@ public class SecurityConfig {
                          .anyRequest().authenticated()
                 )
 
-                // Stateless session (JWT-ready)
+                // ============================
+                // STATELESS SESSION
+                // ============================
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+
+                // ============================
+                // EXCEPTION HANDLING
+                // ============================
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(jwtAuthenticationEntryPoint) // handle 401
+                        .accessDeniedHandler(jwtAccessDeniedHandler) // handle 403
                 );
 
         // PROD: add JWT filter here
