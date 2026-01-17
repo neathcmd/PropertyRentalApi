@@ -13,7 +13,7 @@ import java.util.Objects;
 public class GlobalException {
 
     // =========================================
-    // DEV + PROD: Custom API exception
+    // DEV + PROD: Custom API exceptio
     // Used for controlled business errors
     // =========================================
     @ExceptionHandler(ApiException.class)

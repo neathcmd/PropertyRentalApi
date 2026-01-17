@@ -22,33 +22,37 @@ public class UserController {
     // GET ALL USERS WITH PAGINATION
     // ==============
     @GetMapping
-    public ApiResponse<PaginatedResponse<UserResponse>> getAllUsers(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size
+    public ApiResponse<?> getAllUsers(
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size
     ) {
-        PaginatedResponse<UserResponse> paginatedUsers =
-                userService.getAll(page -1, size);
+//        // If pagination params are provided → paginated
+//        if (page != null && size != null) {
+//            PaginatedResponse<UserResponse> paginatedUsers =
+//                    userService.getAll(page - 1, size);
+//
+//            return new ApiResponse<>(
+//                    200,
+//                    "Get users with pagination successfully.",
+//                    paginatedUsers
+//            );
+//        }
+//
+//        // Otherwise → return all users
+//        return new ApiResponse<>(
+//                200,
+//                "Get all users successfully.",
+//                userService.getAll()
+//        );
 
+        PaginatedResponse<UserResponse> paginatedUsers = userService.getAll(page - 1, size);
         return new ApiResponse<>(
                 200,
-                "Get all users successfully.",
+                "Get users successfully.",
                 paginatedUsers
         );
     }
 
-    // =====================
-    // GET ALL USERS
-    // =====================
-//    @GetMapping
-//    public ApiResponse<List<UserResponse>> getAllUsers() {
-//        List<UserResponse> getAllUser = userService.getAll();
-//
-//        return new ApiResponse<>(
-//                200,
-//                "Get users successfully.",
-//                getAllUser
-//        );
-//    }
 
     // =====================
     // GET USER BY ID
