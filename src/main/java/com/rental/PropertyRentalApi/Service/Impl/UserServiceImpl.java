@@ -33,47 +33,37 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public PaginatedResponse<UserResponse> getAll(int page, int size) {
-        Pageable pageable= PageRequest.of(
-                page,
-                size
-        );
 
+        Pageable pageable = PageRequest.of(page, size);
         Page<UserEntity> userPage = userRepository.findAll(pageable);
-
-        if (userPage.isEmpty()) {
-            throw notFound("Users not found.");
-        }
 
         List<UserResponse> userResponses = userPage.getContent()
                 .stream()
                 .map(mapperFunction::toUserResponse)
                 .toList();
 
-        PaginatedResponse.PaginationMeta paginationMeta = new PaginatedResponse.PaginationMeta(
-                userPage.getNumber() + 1,
-                userPage.getSize(),
-                userPage.getTotalElements(),
-                userPage.getTotalPages(),
-                userPage.hasNext(),
-                userPage.hasPrevious()
-        );
+        PaginatedResponse.PaginationMeta paginationMeta =
+                new PaginatedResponse.PaginationMeta(
+                        userPage.getNumber() + 1,
+                        userPage.getSize(),
+                        userPage.getTotalElements(),
+                        userPage.getTotalPages(),
+                        userPage.hasNext(),
+                        userPage.hasPrevious()
+                );
 
         return new PaginatedResponse<>(userResponses, paginationMeta);
     }
 
 //    @Override
 //    public List<UserResponse> getAll() {
-//
-//        List<UserEntity> users = userRepository.findAll();
-//
-//        if (users.isEmpty()) {
-//            throw notFound("User not found.");
-//        }
-//
-//        return users.stream()
+//        return userRepository.findAll()
+//                .stream()
 //                .map(mapperFunction::toUserResponse)
 //                .toList();
 //    }
+
+
 
     @Override
     public UserResponse getById(Long id) {

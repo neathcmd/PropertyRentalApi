@@ -1,12 +1,10 @@
 package com.rental.PropertyRentalApi.DTO.response;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 public class ApiResponse<T> {
 
     private Integer status;
@@ -21,5 +19,11 @@ public class ApiResponse<T> {
     public ApiResponse(Integer status, String message) {
         this.status = status;
         this.message = message;
+    }
+
+    public ApiResponse(Integer status, String message, T data) {
+        this.status = status;
+        this.message = message;
+        this.data = data;
     }
 }
