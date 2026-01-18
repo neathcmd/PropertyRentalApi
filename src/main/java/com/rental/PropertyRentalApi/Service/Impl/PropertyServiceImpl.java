@@ -22,6 +22,7 @@ import static com.rental.PropertyRentalApi.Exception.ErrorsExceptionFactory.*;
 
 @Service
 @RequiredArgsConstructor
+@SuppressWarnings("unused")
 public class PropertyServiceImpl implements PropertyService {
 
     private final PropertyRepository propertyRepository;
@@ -65,22 +66,6 @@ public class PropertyServiceImpl implements PropertyService {
 
         return new PaginatedResponse<>(propertyResponses, paginationMeta);
     }
-
-    // ==============
-    // GET ALL
-    // ==============
-//    @Override
-//    public List<PropertyResponse> getAll() {
-//
-//        List<PropertyEntity> properties = propertyRepository.findAll();
-//        if (properties.isEmpty()) {
-//            throw notFound("Properties not found.");
-//        }
-//
-//        return properties.stream()
-//                .map(mapperFunction::toPropertyResponse)
-//                .toList();
-//    }
 
     // ==============
     // GET BY ID

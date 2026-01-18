@@ -48,6 +48,7 @@ public class UserController {
         PaginatedResponse<UserResponse> paginatedUsers = userService.getAll(page - 1, size);
         return new ApiResponse<>(
                 200,
+                true,
                 "Get users successfully.",
                 paginatedUsers
         );
@@ -63,6 +64,7 @@ public class UserController {
 
         return new ApiResponse<>(
                 200,
+                true,
                 "Get user successfully.",
                 getUserId
         );
@@ -79,6 +81,7 @@ public class UserController {
 
         return new ApiResponse<>(
                 201,
+                true,
                 "User created successfully.",
                 createdUser
         );
@@ -96,6 +99,7 @@ public class UserController {
 
         return new ApiResponse<>(
                 200,
+                true,
                 "User updated successfully.",
                 updatedUser
         );
@@ -111,6 +115,7 @@ public class UserController {
 
         return new ApiResponse<>(
                 200,
+                true,
                 "User deleted successfully.",
                 null
         );

@@ -1,6 +1,5 @@
 package com.rental.PropertyRentalApi.Service.Impl;
 
-import com.rental.PropertyRentalApi.Entity.UserEntity;
 import com.rental.PropertyRentalApi.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -10,45 +9,17 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@SuppressWarnings("unused")
 public class UserDetailsServiceImpl implements UserDetailsService {
 
     private final UserRepository userRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // fetch user from database
-        UserEntity user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
-
-        // return user — UserEntity implements UserDetails
-        return user;
+        return userRepository.findByUsername(username)
+                .orElseThrow(() ->
+                        new UsernameNotFoundException("User not found: " + username)
+                );
     }
-}
 
-//package com.rental.PropertyRentalApi.Service.Impl;
-//
-//import com.rental.PropertyRentalApi.Repository.UserRepository;
-//import lombok.RequiredArgsConstructor;
-//
-//import org.springframework.security.core.userdetails.UserDetails;
-//import org.springframework.security.core.userdetails.UserDetailsService;
-//import org.springframework.stereotype.Service;
-//
-//import static com.rental.PropertyRentalApi.Exception.ErrorsExceptionFactory.*;
-//
-//@Service
-//@RequiredArgsConstructor
-//public class UserDetailsServiceImpl implements UserDetailsService {
-//
-//    private final UserRepository userRepository;
-//
-//    @Override
-//    public UserDetails loadUserByUsername(String username) {
-//        if (username == null || username.isBlank()) {
-//            throw badRequest("Username is required.");
-//        }
-//
-//        return userRepository.findByUsername(username)
-//                .orElseThrow(() -> notFound("User not found."));
-//    }
-//}
+}

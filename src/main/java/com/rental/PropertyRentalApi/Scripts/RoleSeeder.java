@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 @Order(1)
+@SuppressWarnings("unused")
 public class RoleSeeder implements CommandLineRunner {
 
     private final RoleRepository roleRepository;
