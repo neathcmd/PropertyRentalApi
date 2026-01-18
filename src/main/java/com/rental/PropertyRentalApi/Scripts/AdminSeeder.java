@@ -19,6 +19,7 @@ import static com.rental.PropertyRentalApi.Exception.ErrorsExceptionFactory.notF
 @Component
 @RequiredArgsConstructor
 @Order(2)
+@SuppressWarnings("unused")
 public class AdminSeeder implements CommandLineRunner {
 
     private final UserRepository userRepository;

@@ -33,6 +33,7 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
+@SuppressWarnings("unused")
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
@@ -115,7 +116,7 @@ public class AuthServiceImpl implements AuthService {
                 response,
                 "accessToken",
                 accessToken,
-                300 // 5 minutes
+                900 // 15 minutes
         );
 
         cookieHelper.setAuthCookie(
@@ -132,6 +133,7 @@ public class AuthServiceImpl implements AuthService {
 
         return new ApiResponse<>(
                 201,
+                true,
                 "Register successfully.",
                 new RegisterResponse(userResponse)
         ).getData();
@@ -213,6 +215,6 @@ public class AuthServiceImpl implements AuthService {
         cookieHelper.clearAuthCookie(response, "accessToken");
         cookieHelper.clearAuthCookie(response, "refreshToken");
 
-        return new ApiResponse<>("User logout successfully.");
+        return new ApiResponse<>(false, "User logout successfully.");
     }
 }

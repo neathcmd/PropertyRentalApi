@@ -33,6 +33,7 @@ public class PropertyController {
 
         return new ApiResponse<>(
                 200,
+                true,
                 "Get all properties successfully.",
                 paginatedProperties
         );
@@ -61,6 +62,7 @@ public class PropertyController {
 
         return new ApiResponse<>(
                 200,
+                true,
                 "Get properties successfully.",
                 property
         );
@@ -77,6 +79,7 @@ public class PropertyController {
 
         return new ApiResponse<>(
                 201,
+                true,
                 "Created Property successfully.",
                 property
         );
@@ -94,6 +97,7 @@ public class PropertyController {
 
         return new ApiResponse<>(
                 200,
+                true,
                 "Updated property successfully.",
                 updatedProperty
         );
@@ -109,6 +113,7 @@ public class PropertyController {
 
         return new ApiResponse<>(
                 204,
+                true,
                 "Property deleted successfully."
         );
     }
@@ -124,6 +129,7 @@ public class PropertyController {
 
         return new ApiResponse<>(
                 200,
+                true,
                 "Get your properties successfully.",
                 properties
         );

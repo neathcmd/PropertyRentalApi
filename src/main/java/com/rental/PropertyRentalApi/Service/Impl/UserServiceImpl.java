@@ -24,6 +24,7 @@ import static com.rental.PropertyRentalApi.Exception.ErrorsExceptionFactory.notF
 
 @Service
 @RequiredArgsConstructor
+@SuppressWarnings("unused")
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;

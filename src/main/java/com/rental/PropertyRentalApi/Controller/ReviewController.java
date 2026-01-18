@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/reviews")
+@SuppressWarnings("unused")
 public class ReviewController {
 
     private final ReviewService reviewService;
@@ -29,6 +30,7 @@ public class ReviewController {
 
         return new ApiResponse<>(
                 201,
+                true,
                 "Review created successfully.",
                 review
         );
@@ -46,6 +48,7 @@ public class ReviewController {
 
         return new ApiResponse<>(
                 200,
+                true,
                 "Review updated successfully.",
                 review
         );
@@ -60,6 +63,7 @@ public class ReviewController {
 
         return new ApiResponse<>(
                 204,
+                true,
                 "Review deleted successfully."
         );
     }
@@ -77,6 +81,7 @@ public class ReviewController {
 
         return new ApiResponse<>(
                 200,
+                true,
                 "Reviews retrieved successfully.",
                 reviews
         );
@@ -94,6 +99,7 @@ public class ReviewController {
 
         return new ApiResponse<>(
                 200,
+                true,
                 "Your reviews retrieved successfully.",
                 reviews
         );
@@ -108,6 +114,7 @@ public class ReviewController {
 
         return new ApiResponse<>(
                 200,
+                true,
                 "Review retrieved successfully.",
                 review
         );

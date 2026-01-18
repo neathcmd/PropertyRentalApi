@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 @Component
 @RequiredArgsConstructor
 @Order(3)
+@SuppressWarnings("unused")
 public class PropertySeeder implements CommandLineRunner {
 
     private final PropertyRepository propertyRepository;

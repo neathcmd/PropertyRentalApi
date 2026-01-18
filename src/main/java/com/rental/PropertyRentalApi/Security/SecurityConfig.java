@@ -17,6 +17,7 @@ import org.springframework.web.cors.CorsConfiguration;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
+@SuppressWarnings("unused")
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;

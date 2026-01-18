@@ -3,12 +3,15 @@ package com.rental.PropertyRentalApi.Utils;
 import com.rental.PropertyRentalApi.DTO.request.UserCreateRequest;
 import com.rental.PropertyRentalApi.DTO.request.UserUpdateRequest;
 import com.rental.PropertyRentalApi.Repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import static com.rental.PropertyRentalApi.Exception.ErrorsExceptionFactory.badRequest;
 
 @Component
+@RequiredArgsConstructor
+@SuppressWarnings("unused")
 public class HelperFunction {
 
     @Autowired

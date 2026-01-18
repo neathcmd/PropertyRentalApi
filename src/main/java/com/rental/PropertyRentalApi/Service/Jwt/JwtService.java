@@ -22,6 +22,7 @@ import static com.rental.PropertyRentalApi.Exception.ErrorsExceptionFactory.unau
 
 @Service
 @RequiredArgsConstructor
+@SuppressWarnings("unused")
 public class JwtService {
 
     /*
