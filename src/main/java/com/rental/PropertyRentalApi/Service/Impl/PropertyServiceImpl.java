@@ -18,7 +18,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 //import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import static com.rental.PropertyRentalApi.Exception.ErrorsExceptionFactory.*;
 
@@ -37,6 +39,93 @@ public class PropertyServiceImpl implements PropertyService {
     private final HelperFunction helperFunction;
 
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+
+
+
+
+
+    // ==============
+    // SEARCH PROPERTIES BY MULTIPLE FILTERS
+    // ==============
+    @Override
+    public PaginatedResponse<PropertyResponse> searchProperties(
+            String title,
+            String description,
+            String categoryName,
+            int page,
+            int size,
+            String address,
+            String propertyType
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Properties> propertyPage = propertyRepository.findAll(
+                (root, query, criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<>();
+
+                    if (title != null && !title.isEmpty()) {
+                        predicates.add((Predicate) criteriaBuilder.like(
+                                criteriaBuilder.lower(root.get("title")),
+                                "%" + title.toLowerCase() + "%"
+                        ));
+                    }
+
+                    if (description != null && !description.isEmpty()) {
+                        predicates.add((Predicate) criteriaBuilder.like(
+                                criteriaBuilder.lower(root.get("description")),
+                                "%" + description.toLowerCase() + "%"
+                        ));
+                    }
+
+                    if (categoryName != null && !categoryName.isEmpty()) {
+                        predicates.add((Predicate) criteriaBuilder.equal(
+                                criteriaBuilder.lower(root.get("category").get("name")),
+                                categoryName.toLowerCase()
+                        ));
+                    }
+
+                    if (address != null && !address.isEmpty()) {
+                        predicates.add((Predicate) criteriaBuilder.like(
+                                criteriaBuilder.lower(root.get("address")),
+                                "%" + address.toLowerCase() + "%"
+                        ));
+                    }
+
+                    if (propertyType != null && !propertyType.isEmpty()) {
+                        predicates.add((Predicate) criteriaBuilder.equal(
+                                root.get("propertyType"), 
+                                propertyType
+                        ));
+                    }
+
+                    return criteriaBuilder.and((jakarta.persistence.criteria.Predicate[]) predicates.toArray(new Predicate[0]));
+                },
+                pageable
+        );
+
+        if (propertyPage.isEmpty()) {
+            throw notFound("No properties found matching the search criteria.");
+        }
+
+        return convertToPaginatedResponse(propertyPage);
+    }
+
+
+
+
+
+
+
+    private PaginatedResponse<PropertyResponse> convertToPaginatedResponse(Page<Properties> propertyPage) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'convertToPaginatedResponse'");
+}
+
+
+
+
+
+
 
     // ==============
     // GET ALL WITH PAGINATION
@@ -248,6 +337,13 @@ public class PropertyServiceImpl implements PropertyService {
         Favorites favorite = favoritesRepository.findByPropertyAndUser(property, user)
                 .orElseThrow(() -> new RuntimeException("Favorite not found"));
         favoritesRepository.delete(favorite);
+    }
+
+    @Override
+    public PaginatedResponse<PropertyResponse> searchProperties(String title, String description, String categoryName,
+                int page, int size) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'searchProperties'");
     }
 
 }

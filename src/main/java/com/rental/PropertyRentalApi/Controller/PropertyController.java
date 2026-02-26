@@ -23,6 +23,35 @@ public class PropertyController {
     private final PropertyService propertyService;
     private final HelperFunction helperFunction;
 
+     // ==============
+    // SEARCH PROPERTIES BY MULTIPLE FILTERS
+    // ==============
+
+
+    @GetMapping("/public/properties/search")
+        public ApiResponse<PaginatedResponse<PropertyResponse>> searchProperties(
+                @RequestParam(required = false) String title,
+                @RequestParam(required = false) String description,
+                @RequestParam(required = false) String categoryName,
+                @RequestParam(required = false) String address,
+                @RequestParam(required = false) String propertyType,
+                @RequestParam(defaultValue = "0") int page,
+                @RequestParam(defaultValue = "10") int size
+        ) {
+                PaginatedResponse<PropertyResponse> paginatedProperties =
+                        propertyService.searchProperties(title, description, categoryName, page, size);
+        
+                return new ApiResponse<>(
+                        200,
+                        true,
+                        "Search properties successfully.",
+                        paginatedProperties
+                );
+        }
+
+
+
+
     // ==============
     // GET ALL WITH PAGINATION
     // ==============
