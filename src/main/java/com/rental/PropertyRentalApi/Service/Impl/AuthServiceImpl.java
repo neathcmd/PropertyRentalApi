@@ -396,4 +396,48 @@ public class AuthServiceImpl implements AuthService {
                 "User logout successfully."
         );
     }
+    // com.rental.PropertyRentalApi.Service.Impl.AuthServiceImpl;
+
+@Override
+@Transactional // Ensure the database update is atomic
+public ApiResponse<Object> becomeAgent(Long userId, HttpServletResponse response) {
+    // 1. Find the user
+    Users user = userRepository.findById(userId)
+            .orElseThrow(() -> notFound("User not found"));
+
+    // 2. Find the 'agent' role
+    Roles agentRole = roleRepository.findByName("agent")
+            .orElseThrow(() -> notFound("Agent role not configured in system."));
+
+    // 3. Add the role (Set prevents duplicates)
+    user.getRoles().add(agentRole);
+    userRepository.save(user);
+
+    // 4. Update the security context (Regenerate Access Token)
+    // We do this so the user doesn't have to log out and back in to see agent features.
+    List<String> updatedRoles = user.getRoles().stream()
+            .map(Roles::getName)
+            .toList();
+
+    String newAccessToken = jwtService.generateAccessToken(
+            String.valueOf(user.getId()),
+            user.getEmail(),
+            user.getUsername(),
+            updatedRoles
+    );
+
+    // 5. Update the cookie with the new token
+    cookieHelper.setAuthCookie(
+            response,
+            "accessToken",
+            newAccessToken,
+            300 // 5 minutes (matching your login logic)
+    );
+
+    return new ApiResponse<>(
+            200,
+            true,
+            "Congratulations! You are now an Agent."
+    );
+}
 }

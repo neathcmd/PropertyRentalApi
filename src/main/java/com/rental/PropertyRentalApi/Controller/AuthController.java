@@ -66,4 +66,14 @@ public class AuthController {
     public ApiResponse<Object> logout(HttpServletRequest request, HttpServletResponse response) {
         return authService.logout(request, response);
     }
+
+    // com.rental.PropertyRentalApi.Controller.AuthController;
+
+@PostMapping("/become-agent/{userId}")
+public ResponseEntity<ApiResponse<Object>> becomeAgent(
+        @PathVariable Long userId,
+        HttpServletResponse response
+) {
+    return ResponseEntity.ok(authService.becomeAgent(userId, response));
+}
 }

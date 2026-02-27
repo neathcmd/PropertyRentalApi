@@ -36,4 +36,7 @@ public interface AuthService {
             HttpServletRequest request,
             HttpServletResponse response
     );
+    ApiResponse<Object>
+     becomeAgent(Long userId, 
+     HttpServletResponse response);
 }
