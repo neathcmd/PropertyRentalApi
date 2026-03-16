@@ -10,21 +10,12 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PropertyResponse {
-
+public class PropertySummaryResponse {
     private Long id;
     private String title;
-    private String description;
     private String address;
     private BigDecimal price;
-    private BigDecimal electricityCost;
-    private BigDecimal waterCost;
     private Boolean available;
-
     private CategoryResponse category;
-//    private UserResponse createdBy;
-private CreatedByResponse createdBy;
     private List<String> images;
-//    private Long reviewCount;
-//    private Long favoriteCount;
 }

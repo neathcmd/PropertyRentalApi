@@ -41,7 +41,7 @@ public class PropertyServiceImpl implements PropertyService {
 
     // ==============
     // GET ALL WITH PAGINATION
-    // ==============s
+    // ==============
     @Override
     public PaginatedResponse<PropertyResponse> getAll(int page, int size) {
         Pageable pageable = PageRequest.of(
@@ -130,6 +130,9 @@ public class PropertyServiceImpl implements PropertyService {
         // SAVE AND RETURN NEW PROPERTY
         // ==============
         Properties savedProperty =  propertyRepository.save(property);
+        Properties fullProperty = propertyRepository.findByIdWithDetails(savedProperty.getId())
+                .orElseThrow(() -> notFound("Property not found after save"));
+
 
         return propertyMapper.toPropertyResponse(savedProperty);
     }
