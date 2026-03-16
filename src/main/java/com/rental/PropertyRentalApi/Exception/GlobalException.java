@@ -64,7 +64,7 @@ public class GlobalException {
     public ResponseEntity<ApiResponse<String>> handleUnexpected(Exception ex) {
 
         // DEV ONLY (OPTIONAL): log stack trace
-        // ex.printStackTrace();
+         ex.printStackTrace();
 
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)

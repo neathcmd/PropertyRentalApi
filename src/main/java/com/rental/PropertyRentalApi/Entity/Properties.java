@@ -7,7 +7,9 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -55,8 +57,10 @@ public class Properties {
     @Column(nullable = false)
     private Boolean available = true;
 
-    @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<UploadsImages> images;
+//    @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<UploadsImages> images;
+@OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
+private Set<UploadsImages> images = new HashSet<>();
 
     @CreationTimestamp
     @Column(

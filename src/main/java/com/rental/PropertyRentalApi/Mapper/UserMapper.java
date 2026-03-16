@@ -39,7 +39,7 @@ public interface UserMapper {
     // ============
     @Mapping(target = "roles", source = "roles")
     @Mapping(target = "profile", expression = "java(mapProfile(user.getProfile()))")
-//    @Mapping(target = "favorites", ignore = true)
+    @Mapping(target = "favorites", source = "favorites")
     UserResponse toUserResponse(Users user);
 
     // ============
