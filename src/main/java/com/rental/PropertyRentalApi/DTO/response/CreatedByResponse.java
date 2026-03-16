@@ -4,20 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class UserResponse {
+@AllArgsConstructor
+public class CreatedByResponse {
     private Long id;
     private String fullname;
     private String username;
-    private String email;
-    private String phone;
     private String profile;
-    private List<PropertySummaryResponse> favorites;
-//    private Long favoriteCount;
-    private List<String> roles;
 }
-

@@ -44,8 +44,10 @@ public class Users implements UserDetails {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private UsersProfile profile;
 
-    @OneToMany(mappedBy = "user")
-    private List<Favorites> favorites;
+//    @OneToMany(mappedBy = "user")
+//    private List<Favorites> favorites;
+@OneToMany(mappedBy = "user")
+private Set<Favorites> favorites = new HashSet<>();
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
