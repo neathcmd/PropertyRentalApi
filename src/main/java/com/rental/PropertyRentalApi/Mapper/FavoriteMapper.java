@@ -20,6 +20,7 @@ public interface FavoriteMapper {
     default List<PropertySummaryResponse> mapFavorites(Set<Favorites> favorites) {
         if (favorites == null) return List.of();
         return favorites.stream()
+                .filter(f -> f.getProperty() != null)
                 .map(this::toPropertySummaryResponse)
                 .toList();
     }
