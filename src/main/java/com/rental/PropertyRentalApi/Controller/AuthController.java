@@ -11,7 +11,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -23,23 +22,20 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<RegisterResponse> register(
             @RequestPart("data") RegisterRequest request,
-            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage,
-            HttpServletRequest httpRequest,
             HttpServletResponse response
     ) {
         return ResponseEntity.status(201).body(
-                authService.register(request, httpRequest, response, profileImage)
+                authService.register(request, response)
         );
     }
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(
             @RequestBody AuthRequest request,
-            HttpServletRequest httpRequest,
             HttpServletResponse response
     ) {
         return ResponseEntity.ok(
-                authService.login(request, httpRequest, response)
+                authService.login(request, response)
         );
     }
 

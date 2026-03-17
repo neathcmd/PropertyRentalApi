@@ -11,14 +11,11 @@ public interface AuthService {
 
     RegisterResponse register(
             RegisterRequest request,
-            HttpServletRequest httpRequest,
-            HttpServletResponse response,
-            MultipartFile profileImage
+            HttpServletResponse response
     );
 
     AuthResponse login(
             AuthRequest request,
-            HttpServletRequest httpRequest,
             HttpServletResponse response
     );
 

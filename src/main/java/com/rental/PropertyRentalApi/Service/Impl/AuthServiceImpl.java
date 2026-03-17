@@ -49,9 +49,7 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public RegisterResponse register(
             RegisterRequest request,
-            HttpServletRequest httpRequest,
-            HttpServletResponse response,
-            MultipartFile profileImage
+            HttpServletResponse response
     ) {
         // ========================
         // VALIDATE UNIQUENESS
@@ -91,13 +89,6 @@ public class AuthServiceImpl implements AuthService {
         Users savedUser = userRepository.save(user);
 
         // ========================
-        // UPLOAD PROFILE IMAGE
-        // ========================
-        if (profileImage != null && !profileImage.isEmpty()) {
-            uploadService.uploadUserProfile(savedUser.getId(), profileImage);
-        }
-
-        // ========================
         // GENERATE TOKEN & SET COOKIE
         // ========================
         String token = generateTokenAndSetCookie(savedUser, response);
@@ -113,7 +104,6 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthResponse login(
             AuthRequest request,
-            HttpServletRequest httpRequest,
             HttpServletResponse response
     ) {
         // ========================
