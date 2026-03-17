@@ -9,5 +9,4 @@ import java.util.Date;
 public class UserUpdateRequest {
     private String fullname;
     private String phone;
-    private UsersProfile profile;
 }

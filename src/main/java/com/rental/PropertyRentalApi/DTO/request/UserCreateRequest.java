@@ -10,5 +10,4 @@ public class UserCreateRequest {
     private String email;
     private String password;
     private String phone;
-    private UsersProfile profile;
 }

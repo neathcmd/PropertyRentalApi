@@ -21,7 +21,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<RegisterResponse> register(
-            @RequestPart("data") RegisterRequest request,
+            @RequestBody RegisterRequest request,
             HttpServletResponse response
     ) {
         return ResponseEntity.status(201).body(
