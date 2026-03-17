@@ -11,6 +11,7 @@ import com.rental.PropertyRentalApi.Repository.PropertyRepository;
 import com.rental.PropertyRentalApi.Repository.ReviewRepository;
 import com.rental.PropertyRentalApi.Service.Jwt.JwtService;
 import com.rental.PropertyRentalApi.Service.ReviewService;
+import com.rental.PropertyRentalApi.Utils.AuthUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,7 +28,7 @@ public class ReviewServiceImpl implements ReviewService {
 
     private final ReviewRepository reviewRepository;
     private final PropertyRepository propertyRepository;
-    private final JwtService jwtService;
+    private final AuthUtil authUtil;
     private final ReviewMapper reviewMapper;
 
     // ======================
@@ -35,7 +36,7 @@ public class ReviewServiceImpl implements ReviewService {
     // ======================
     @Override
     public ReviewResponse createReview(Long propertyId, ReviewCreateRequest request) {
-        Users currentUser = jwtService.getCurrentUser();
+        Users currentUser = authUtil.getAuthenticatedUser();
 
         Properties property = propertyRepository.findById(propertyId)
                 .orElseThrow(() -> notFound("Property not found"));
@@ -71,7 +72,7 @@ public class ReviewServiceImpl implements ReviewService {
     // ======================
     @Override
     public ReviewResponse updateReview(Long reviewId, ReviewUpdateRequest request) {
-        Users currentUser = jwtService.getCurrentUser();
+        Users currentUser = authUtil.getAuthenticatedUser();
 
         Reviews review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> notFound("Review not found"));
@@ -91,7 +92,7 @@ public class ReviewServiceImpl implements ReviewService {
     // ======================
     @Override
     public void deleteReview(Long reviewId) {
-        Users currentUser = jwtService.getCurrentUser();
+        Users currentUser = authUtil.getAuthenticatedUser();
 
         Reviews review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> notFound("Review not found"));
@@ -122,7 +123,7 @@ public class ReviewServiceImpl implements ReviewService {
     // ======================
     @Override
     public Page<ReviewResponse> getCurrentUserReviews(int page, int size) {
-        Users currentUser = jwtService.getCurrentUser();
+        Users currentUser = authUtil.getAuthenticatedUser();
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<Reviews> reviews = reviewRepository.findAllByUser(currentUser, pageable);
