@@ -3,19 +3,15 @@ package com.rental.PropertyRentalApi.Service.Impl;
 import com.rental.PropertyRentalApi.DTO.request.AuthRequest;
 import com.rental.PropertyRentalApi.DTO.request.RegisterRequest;
 import com.rental.PropertyRentalApi.DTO.response.*;
-import com.rental.PropertyRentalApi.Entity.RefreshToken;
 import com.rental.PropertyRentalApi.Entity.Roles;
 import com.rental.PropertyRentalApi.Entity.Users;
 import com.rental.PropertyRentalApi.Mapper.UserMapper;
-import com.rental.PropertyRentalApi.Repository.RefreshTokenRepository;
 import com.rental.PropertyRentalApi.Repository.RoleRepository;
 import com.rental.PropertyRentalApi.Repository.UserRepository;
 import com.rental.PropertyRentalApi.Service.AuthService;
-import com.rental.PropertyRentalApi.Service.DeviceTrackingService;
 import com.rental.PropertyRentalApi.Service.Jwt.JwtService;
 import com.rental.PropertyRentalApi.Service.UploadService;
 import com.rental.PropertyRentalApi.Utils.CookieHelper;
-import com.rental.PropertyRentalApi.Utils.HelperFunction;
 import com.rental.PropertyRentalApi.Utils.UserValidatorUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -26,12 +22,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 import static com.rental.PropertyRentalApi.Exception.ErrorsExceptionFactory.*;
 
@@ -41,116 +34,16 @@ import static com.rental.PropertyRentalApi.Exception.ErrorsExceptionFactory.*;
 @SuppressWarnings("unused")
 public class AuthServiceImpl implements AuthService {
 
+    private static final int COOKIE_MAX_AGE = 60 * 24 * 60 * 60; // 60 days in seconds
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final CookieHelper cookieHelper;
     private final RoleRepository roleRepository;
     private final UserMapper userMapper;
-    private final RefreshTokenRepository refreshTokenRepository;
-    private final HelperFunction helperFunction;
     private final UserValidatorUtil userValidator;
-    private final DeviceTrackingService deviceTrackingService;
     private final UploadService uploadService;
-
-    @Override
-    public RefreshTokenResponse refreshToken(
-            HttpServletRequest request,
-            HttpServletResponse response
-    ) {
-
-        // ========================
-        // GET REFRESH TOKEN FROM COOKIE
-        // ========================
-        String refreshTokenValue =
-                cookieHelper.getCookieValue(request, "refreshToken");
-
-        if (refreshTokenValue == null) {
-            throw unauthorized("Refresh token missing");
-        }
-
-        // ========================
-        // LOOK UP REFRESH TOKEN IN DATABASE
-        // ========================
-        RefreshToken oldToken = refreshTokenRepository
-                .findByToken(refreshTokenValue)
-                .orElseThrow(() -> unauthorized("Invalid refresh token"));
-
-        // ========================
-        // VALIDATE REFRESH TOKEN
-        // - Must not be revoked
-        // - Must not be expired
-        // ========================
-        if (oldToken.isRevoked() || oldToken.getExpiresAt().isBefore(Instant.now())) {
-            throw unauthorized("Refresh token expired or revoked");
-        }
-
-        // ========================
-        // REUSE DETECTION (ROTATION)
-        // Invalidate the old refresh token immediately
-        // ========================
-        oldToken.setRevoked(true);
-        refreshTokenRepository.save(oldToken);
-
-        // ========================
-        // EXTRACT USER FROM TOKEN
-        // ========================
-        Users user = oldToken.getUsers();
-
-        // ========================
-        // GENERATE NEW ACCESS TOKEN (JWT)
-        // ========================
-        String newAccessToken = jwtService.generateAccessToken(
-                String.valueOf(user.getId()),
-                user.getEmail(),
-                user.getUsername(),
-                user.getRoles()
-                        .stream()
-                        .map(Roles::getName)
-                        .toList()
-        );
-
-        // ========================
-        // CREATE NEW REFRESH TOKEN (SERVER-SIDE)
-        // ========================
-        String newRefreshTokenValue = UUID.randomUUID().toString();
-
-        RefreshToken newToken = new RefreshToken();
-        newToken.setToken(newRefreshTokenValue);
-        newToken.setUsers(user);
-        newToken.setExpiresAt(
-                Instant.now().plus(30, ChronoUnit.DAYS)
-        );
-
-        refreshTokenRepository.save(newToken);
-
-        // ========================
-        // STORE NEW TOKENS IN HTTP-ONLY COOKIES
-        // ========================
-        cookieHelper.setAuthCookie(
-                response,
-                "accessToken",
-                newAccessToken,
-                300 // 5 minutes
-        );
-
-        cookieHelper.setAuthCookie(
-                response,
-                "refreshToken",
-                newRefreshTokenValue,
-                259200 // 30 days
-        );
-
-        // ========================
-        // RETURN NEW ACCESS TOKEN
-        // ========================
-        return new RefreshTokenResponse(
-                201,
-                true,
-                "Refresh token generate successfully.",
-                newAccessToken
-        );
-    }
 
     @Override
     @Transactional
@@ -160,29 +53,25 @@ public class AuthServiceImpl implements AuthService {
             HttpServletResponse response,
             MultipartFile profileImage
     ) {
-        // Validate username
+        // ========================
+        // VALIDATE UNIQUENESS
+        // ========================
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
             throw badRequest("Username already exists");
         }
-
-        // Validate email
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw badRequest("Email already exists");
         }
-
-        // Validate email format
         userValidator.validateEmailFormat(request.getEmail());
 
         // ========================
-        // MAP REQUEST TO ENTITY USING MAPSTRUCT
+        // BUILD USER ENTITY
         // ========================
         Users user = userMapper.toUserEntity(request);
-
-        // Set encoded password (can't be done by MapStruct)
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
         // ========================
-        // ASSIGN ROLES TO USER
+        // ASSIGN ROLES
         // ========================
         if (request.getRoles() != null && !request.getRoles().isEmpty()) {
             List<Roles> roles = roleRepository.findAllById(request.getRoles());
@@ -202,82 +91,22 @@ public class AuthServiceImpl implements AuthService {
         Users savedUser = userRepository.save(user);
 
         // ========================
-        // VALIDATE USER PROFILE
+        // UPLOAD PROFILE IMAGE
         // ========================
         if (profileImage != null && !profileImage.isEmpty()) {
             uploadService.uploadUserProfile(savedUser.getId(), profileImage);
         }
 
-        // ============================
-        // Track device (AUTO-LOGIN)
-        // ============================
-        try {
-            UserDeviceResponse userDeviceResponse = deviceTrackingService.trackUserDevice(savedUser, httpRequest);
-        } catch (Exception e) {
-            log.warn("Device tracking failed during register for user {}", savedUser.getId(), e);
-        }
-
         // ========================
-        // EXTRACT ROLE NAMES
+        // GENERATE TOKEN & SET COOKIE
         // ========================
-        // List<String> roles = mapperFunction.mapRolesToStringList(savedUser.getRoles());
-        List<String> roles = user.getRoles()
-//        savedUser.getRoles()
-                .stream()
-                .map(Roles::getName)
-                .toList();
-
-        // ========================
-        // GENERATE TOKENS
-        // ========================
-        String accessToken = jwtService.generateAccessToken(
-                String.valueOf(savedUser.getId()),
-                savedUser.getEmail(),
-                savedUser.getUsername(),
-                roles
-        );
-
-        // ========================
-        // DB BACKEND REFRESH TOKEN
-        // ========================
-        String refreshTokenValue = UUID.randomUUID().toString();
-
-        RefreshToken refreshToken = new RefreshToken();
-        refreshToken.setToken(refreshTokenValue);
-        refreshToken.setUsers(savedUser);
-        refreshToken.setExpiresAt(
-                Instant.now().plus(30, ChronoUnit.DAYS)
-        );
-
-        refreshTokenRepository.save(refreshToken);
-
-        // ========================
-        // SAVE TOKENS IN COOKIE
-        // ========================
-        cookieHelper.setAuthCookie(
-                response,
-                "accessToken",
-                accessToken,
-                900 // 15 minutes
-        );
-
-        cookieHelper.setAuthCookie(
-                response,
-                "refreshToken",
-                refreshTokenValue,
-                259200 // 30 days
-        );
-
-        // ========================
-        // MAP USER TO RESPONSE USING MAPSTRUCT
-        // ========================
-        UserResponse userResponse = userMapper.toUserResponse(savedUser);
+        String token = generateTokenAndSetCookie(savedUser, response);
 
         return new RegisterResponse(
                 201,
                 true,
                 "Register successfully.",
-                userResponse
+                userMapper.toUserResponse(savedUser)
         );
     }
 
@@ -287,9 +116,9 @@ public class AuthServiceImpl implements AuthService {
             HttpServletRequest httpRequest,
             HttpServletResponse response
     ) {
-
-//        Thread.sleep(500);
-
+        // ========================
+        // FIND & VALIDATE USER
+        // ========================
         Users user = userRepository.findByEmail(request.getEmail_or_username())
                 .or(() -> userRepository.findByUsername(request.getEmail_or_username()))
                 .orElseThrow(() -> notFound("User not found."));
@@ -299,98 +128,48 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // ========================
-        // EXTRACT ROLE NAME
+        // GENERATE TOKEN & SET COOKIE
         // ========================
-        List<String> roles = user.getRoles()
-                .stream()
-                .map(Roles::getName)
-                .toList();
-
-        // ========================
-        // MAP USER TO RESPONSE USING MAPSTRUCT
-        // ========================
-        UserResponse userResponse = userMapper.toUserResponse(user);
-
-        // ============================
-        // Track device login
-        // ============================
-        try {
-            UserDeviceResponse userDeviceResponse = deviceTrackingService.trackUserDevice(user, httpRequest);
-        } catch (Exception e) {
-            log.warn("Device tracking failed for user {}", user.getId(), e);
-        }
-
-        // ========================
-        // GENERATE ACCESS TOKENS
-        // ========================
-        String accessToken = jwtService.generateAccessToken(
-                String.valueOf(user.getId()),
-                user.getEmail(),
-                user.getUsername(),
-                roles
-        );
-
-        // ========================
-        // DB BACKEND REFRESH TOKEN
-        // ========================
-        String refreshTokenValue = UUID.randomUUID().toString();
-
-        RefreshToken refreshToken = new RefreshToken();
-        refreshToken.setToken(refreshTokenValue);
-        refreshToken.setUsers(user);
-        refreshToken.setExpiresAt(
-                Instant.now().plus(30, ChronoUnit.DAYS)
-        );
-
-        refreshTokenRepository.save(refreshToken);
-
-        // ========================
-        // SAVE TOKENS IN COOKIE
-        // ========================
-        cookieHelper.setAuthCookie(
-                response,
-                "accessToken",
-                accessToken,
-                300 // 5 minutes
-        );
-
-        cookieHelper.setAuthCookie(
-                response,
-                "refreshToken",
-                refreshTokenValue,
-                259200 // 30 days
-        );
+        String token = generateTokenAndSetCookie(user, response);
 
         return new AuthResponse(
                 200,
                 true,
                 "Login successfully.",
-                accessToken,
-                userResponse
+                token,
+                userMapper.toUserResponse(user)
         );
     }
 
     @Override
     public ApiResponse<Object> logout(HttpServletRequest request, HttpServletResponse response) {
-
-        String accessToken = cookieHelper.getCookieValue(request, "accessToken");
-        String refreshTokenValue = cookieHelper.getCookieValue(request, "refreshToken");
-
-        if (refreshTokenValue != null) {
-            refreshTokenRepository.findByToken(refreshTokenValue)
-                    .ifPresent(token -> {
-                        token.setRevoked(true);
-                        refreshTokenRepository.save(token);
-                    });
-        }
-
-        cookieHelper.clearAuthCookie(response, "accessToken");
-        cookieHelper.clearAuthCookie(response, "refreshToken");
+        cookieHelper.clearAuthCookie(response, "token");
 
         return new ApiResponse<>(
                 200,
                 true,
                 "User logout successfully."
         );
+    }
+
+    // ========================
+    // PRIVATE HELPER
+    // ========================
+    private String generateTokenAndSetCookie(Users user, HttpServletResponse response) {
+        List<String> roles = user.getRoles()
+                .stream()
+                .map(Roles::getName)
+                .toList();
+
+        String token = jwtService.generateToken(
+                String.valueOf(user.getId()),
+                user.getEmail(),
+                user.getUsername(),
+                roles
+        );
+
+        cookieHelper.setAuthCookie(response, "token", token, COOKIE_MAX_AGE);
+
+        return token;
     }
 }

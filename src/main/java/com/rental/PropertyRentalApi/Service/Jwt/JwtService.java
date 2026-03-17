@@ -31,19 +31,10 @@ public class JwtService {
 
     private static final Logger logger = LoggerFactory.getLogger(JwtService.class);
 
-    /*
-     * =========================
-     * JWT CONFIG
-     * =========================
-     */
+    private static final long TOKEN_EXPIRY_MS = 60L * 24 * 60 * 60 * 1000; // 60 days
+
     @Value("${spring.jwt-secret}")
     private String jwtSecret;
-
-    @Value("${spring.access-token-expire}")
-    private long accessTokenExpired;
-
-    @Value("${spring.refresh-token-expire}")
-    private long refreshTokenExpired;
 
     /*
      * =========================
@@ -76,43 +67,21 @@ public class JwtService {
      * TOKEN GENERATION
      * =========================
      */
-    public String generateAccessToken(
-            String userId,
-            String email,
-            String username,
-            List<String> roles
-    ) {
+    public String generateToken(String userId, String email, String username, List<String> roles) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
         claims.put("email", email);
-        claims.put("type", "access");
 
         if (roles != null && !roles.isEmpty()) {
             claims.put("roles", roles);
         }
 
-        return buildToken(claims, username, accessTokenExpired);
-    }
-
-    public String generateRefreshToken(String userId) {
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("userId", userId);
-        claims.put("type", "refresh");
-
-        return buildToken(claims, userId, refreshTokenExpired);
-    }
-
-    private String buildToken(
-            Map<String, Object> claims,
-            String subject,
-            long expiration
-    ) {
         Date now = new Date();
-        Date expiry = new Date(now.getTime() + expiration);
+        Date expiry = new Date(now.getTime() + TOKEN_EXPIRY_MS);
 
         return Jwts.builder()
                 .claims(claims)
-                .subject(subject)
+                .subject(username)
                 .issuedAt(now)
                 .expiration(expiry)
                 .signWith(getSignKey(), Jwts.SIG.HS512)
@@ -136,22 +105,18 @@ public class JwtService {
         return extractClaim(token, Claims::getExpiration);
     }
 
-    public String extractTokenType(String token) {
-        return extractClaim(token, claims -> claims.get("type", String.class));
-    }
-
     /*
      * =========================
      * VALIDATION
      * =========================
      */
     private boolean isTokenExpired(String token) {
-        return !extractExpiration(token).before(new Date());
+        return extractExpiration(token).before(new Date());
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
         return extractUsername(token).equals(userDetails.getUsername())
-                && isTokenExpired(token);
+                && !isTokenExpired(token);
     }
 
     public boolean validateToken(String token) {
@@ -159,10 +124,9 @@ public class JwtService {
             logger.debug("Token validation failed: token is null or blank");
             return false;
         }
-
         try {
-            extractAllClaims(token); // verifies signature + structure
-            return isTokenExpired(token);
+            extractAllClaims(token);
+            return !isTokenExpired(token);
         } catch (JwtException | IllegalArgumentException e) {
             logger.debug("Token validation failed: {}", e.getMessage());
             return false;

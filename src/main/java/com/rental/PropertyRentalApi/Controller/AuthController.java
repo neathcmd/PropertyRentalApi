@@ -6,10 +6,8 @@ import com.rental.PropertyRentalApi.DTO.response.ApiResponse;
 import com.rental.PropertyRentalApi.DTO.response.AuthResponse;
 import com.rental.PropertyRentalApi.DTO.response.RegisterResponse;
 import com.rental.PropertyRentalApi.Service.AuthService;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,34 +20,16 @@ public class AuthController {
 
     private final AuthService authService;
 
-    // ========================
-    // REFRESH ACCESS TOKEN
-    // Uses refresh token from HTTP-only cookie
-    // ========================
-    @PostMapping("/refresh-token")
-    public ResponseEntity<?> refreshToken(
-            HttpServletRequest request,
-            HttpServletResponse response
-    ) {
-        return ResponseEntity.ok(
-                authService.refreshToken(request, response)
-        );
-    }
-
     @PostMapping("/register")
     public ResponseEntity<RegisterResponse> register(
-            @RequestBody RegisterRequest request,
+            @RequestPart("data") RegisterRequest request,
+            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage,
             HttpServletRequest httpRequest,
-            HttpServletResponse response,
-            MultipartFile profileImage
+            HttpServletResponse response
     ) {
-        RegisterResponse result = authService.register(
-                request,
-                httpRequest,
-                response,
-                profileImage
+        return ResponseEntity.status(201).body(
+                authService.register(request, httpRequest, response, profileImage)
         );
-        return ResponseEntity.ok(result);
     }
 
     @PostMapping("/login")
@@ -58,12 +38,18 @@ public class AuthController {
             HttpServletRequest httpRequest,
             HttpServletResponse response
     ) {
-        AuthResponse result = authService.login(request, httpRequest, response);
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(
+                authService.login(request, httpRequest, response)
+        );
     }
 
     @PostMapping("/logout")
-    public ApiResponse<Object> logout(HttpServletRequest request, HttpServletResponse response) {
-        return authService.logout(request, response);
+    public ResponseEntity<ApiResponse<Object>> logout(
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) {
+        return ResponseEntity.ok(
+                authService.logout(request, response)
+        );
     }
 }
