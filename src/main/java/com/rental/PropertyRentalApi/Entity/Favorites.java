@@ -2,6 +2,8 @@ package com.rental.PropertyRentalApi.Entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
 @Entity
 @Getter
@@ -21,6 +23,7 @@ public class Favorites {
     private Users user;
 
     @ManyToOne
+    @NotFound(action = NotFoundAction.IGNORE)
     @JoinColumn(name = "property_id", nullable = false)
     private Properties property;
 }
